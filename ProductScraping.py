@@ -132,25 +132,28 @@ async def main():
         except:
             pass
 
-        sale_info = OrderedDict()
-        sinfo = await new_page.wait_for_selector("div.panel.clr.overflowHidden")
-        # sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
-        check = await sinfo.query_selector_all('div.d-flex')
-
-        while check:
-            try:
-                data = await check.pop(0).inner_text()
-                if "\n\n" in data:
-                    label, value = data.split("\n\n")
-                    label = label.replace(":", "")
-                elif "\n" in data:
-                    label, value = data.split("\n", 1)
-                    label = label.replace(":", "")
-            except:
-                break
-            sale_info[label] = value
-
-        MainInfo['Sale Info'] = sale_info
+        try:
+            sale_info = OrderedDict()
+            sinfo = await new_page.wait_for_selector("div.panel.clr.overflowHidden")
+            # sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
+            check = await sinfo.query_selector_all('div.d-flex')
+    
+            while check:
+                try:
+                    data = await check.pop(0).inner_text()
+                    if "\n\n" in data:
+                        label, value = data.split("\n\n")
+                        label = label.replace(":", "")
+                    elif "\n" in data:
+                        label, value = data.split("\n", 1)
+                        label = label.replace(":", "")
+                except:
+                    break
+                sale_info[label] = value
+    
+            MainInfo['Sale Info'] = sale_info
+        except:
+            pass
         collection.update_one({"carLink": carLink}, {"$set": {"Info": MainInfo}})
         count += 1
         del Document
