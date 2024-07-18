@@ -20,12 +20,12 @@ async def open_browser(page):
 async def visit(context,link, new_page):
     try:
         await new_page.goto(link, wait_until='load')
-        await asyncio.sleep(3)
+        await asyncio.sleep(1.5)
     except Exception as e:
         await new_page.close()
         new_page = await context.new_page()
         await new_page.goto(link, wait_until='load')
-        await asyncio.sleep(3)
+        await asyncio.sleep(1.5)
 
 async def main():
     playwright = await async_playwright().start()
