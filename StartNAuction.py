@@ -62,10 +62,11 @@ async def scrape_auction_data(collection, link_collection):
     count=0
     data={}
 
-    cursor = link_collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "Processing"}})
-    auction_link = cursor['link']
-    print(auction_link)
-    await page.goto(auction_link, wait_until='load')
+    # cursor = link_collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "Processing"}})
+    # auction_link = cursor['link']
+    # print(auction_link)
+    # await page.goto(auction_link, wait_until='load')
+    await page.goto("https://www.copart.com/auctionDashboard")
     await asyncio.sleep(30)
 
     iframe_element=await page.query_selector('div.auction5iframe')
@@ -75,7 +76,8 @@ async def scrape_auction_data(collection, link_collection):
     await asyncio.sleep(5)
     print("Opening links")
     count=10 if link_collection.count_documents({"Info": "None"})>9 else link_collection.count_documents({"Info": "None"})+1
-    while len(await content.query_selector_all('gridster-item.ng-star-inserted'))<count:
+    # Setting the limit of auctions to be added 
+    while len(await content.query_selector_all('gridster-item.ng-star-inserted'))==count:
         add_auction=await content.wait_for_selector('span.nav-option-on.addauctionbtn')
         await asyncio.sleep(3)
         await add_auction.click()
@@ -145,7 +147,7 @@ async def scrape_auction_data(collection, link_collection):
                 # print({link: price}, end=' , ')
             except:
                 pass
-        if count>15:
+        if count>20:
             # print(data)
             iframe_element=await page.query_selector('div.auction5iframe')
             iframe=await iframe_element.query_selector("iframe")
