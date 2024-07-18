@@ -1,0 +1,12 @@
+pyautogui
+pymongo
+playwright==1.40
+asyncio
+motor
+boto3
+aiohttp
+python-dotenv
+BS4
+pytz
+undetected-playwright-patch
+ipykernel
