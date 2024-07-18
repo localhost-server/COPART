@@ -114,20 +114,23 @@ async def main():
             
             MainInfo['Images'] = image_names
 
-        vehicle_info = OrderedDict()
-        vinfo = await new_page.wait_for_selector('div.panel-content.d-flex.f-g1.d-flex-column.full-width')
-        vinfo = await vinfo.query_selector('div.f-g2')
-        check = await vinfo.query_selector_all('div.d-flex')
-
-        while check:
-            try:
-                label, value = (await check.pop(0).inner_text()).split("\n")
-                label = label.replace(":", "")
-                vehicle_info[label] = value
-            except:
-                break
-
-        MainInfo['Vehicle Info'] = vehicle_info
+        try:
+            vehicle_info = OrderedDict()
+            vinfo = await new_page.wait_for_selector('div.panel-content.d-flex.f-g1.d-flex-column.full-width')
+            vinfo = await vinfo.query_selector('div.f-g2')
+            check = await vinfo.query_selector_all('div.d-flex')
+    
+            while check:
+                try:
+                    label, value = (await check.pop(0).inner_text()).split("\n")
+                    label = label.replace(":", "")
+                    vehicle_info[label] = value
+                except:
+                    break
+    
+            MainInfo['Vehicle Info'] = vehicle_info
+        except:
+            pass
 
         sale_info = OrderedDict()
         sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
