@@ -73,7 +73,7 @@ async def main():
         link = carLink.replace("https://www.copart.com", "")
         print(link)
 
-        if count > 100:
+        if count > 40:
             count=0
             print("Closing the browser after 100 cars")
             await new_page.close()
