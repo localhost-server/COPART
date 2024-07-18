@@ -1,1 +1,0 @@
-MONGO_URI="mongodb://adminUser:securePassword@45.56.127.88/?authSource=admin"
