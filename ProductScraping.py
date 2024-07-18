@@ -63,11 +63,10 @@ async def main():
         Document = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
        
         if not Document:
-            break
-        #     await asyncio.sleep(3)
-        #     Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
-        #     if not Document:
-        #         break
+            await asyncio.sleep(3)
+            Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+            if not Document:
+                break
 
         carLink = Document['carLink']
         link = carLink.replace("https://www.copart.com", "")
