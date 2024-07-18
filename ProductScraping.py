@@ -133,7 +133,8 @@ async def main():
             pass
 
         sale_info = OrderedDict()
-        sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
+        sinfo = await new_page.wait_for_selector("div.panel.clr.overflowHidden")
+        # sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
         check = await sinfo.query_selector_all('div.d-flex')
 
         while check:
