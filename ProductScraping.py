@@ -60,8 +60,10 @@ async def main():
     count = 0
 
     while True:
-        Document = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
-       
+        Document = collection.find_one_and_update({"Info.Name": None}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+
+        logged_out = False
+        
         if not Document:
             await asyncio.sleep(3)
             Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
@@ -69,6 +71,7 @@ async def main():
                 break
 
         carLink = Document['carLink']
+
         link = carLink.replace("https://www.copart.com", "")
         print(link)
 
@@ -124,8 +127,16 @@ async def main():
                     label, value = (await check.pop(0).inner_text()).split("\n")
                     label = label.replace(":", "")
                     vehicle_info[label] = value
+                    if "******" in value and "VIN" in label:
+                        logged_out=True
+                        break
                 except:
                     break
+                
+            if logged_out:
+                collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
+                break
+
     
             MainInfo['Vehicle Info'] = vehicle_info
         except:
