@@ -156,7 +156,7 @@ async def scrape_auction_data(collection, link_collection):
             count=0
 
             all_ended_auctions=[i for i in all_auctions if await i.query_selector('div.sale-end.text-center')]
-            if (len(all_auctions)==len(all_ended_auctions)) or (len(all_ended_auctions)>6):
+            if (len(all_auctions)==len(all_ended_auctions)) :
                 print("No of auctions ended: ",len(all_ended_auctions))
 
                 await asyncio.sleep(2)
