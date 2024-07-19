@@ -1,174 +1,327 @@
-# from playwright.async_api import async_playwright
-from undetected_playwright.async_api import async_playwright
-import time
+import argparse
+from playwright.async_api import async_playwright
+# from undetected_playwright.async_api import async_playwright
+import subprocess 
 import asyncio
-import subprocess
-from collections import OrderedDict
 import pymongo
-from pymongo import ASCENDING
-import os
-import json
-import re
+from pymongo import UpdateOne
 from dotenv import load_dotenv
+import os
+from datetime import datetime
+import pytz
+import re
 
-async def open_browser(page):
+load_dotenv()
+
+# Create a new client
+client = pymongo.MongoClient(os.getenv("MONGO_URI"))
+
+# Get a reference to the database
+db = client['Copart']
+
+# Get a reference to the collection
+collection = db['CarsPrice']
+link_collection = db['AuctionLinks']
+
+# Setting CDT timezone
+cdt=pytz.timezone('America/Chicago')
+
+async def open_browser(page, weblink):
     await page.emulate_media(color_scheme='dark')
-    weblink = "https://www.copart.com/login/"
     await page.goto(weblink, wait_until='load')
     return page
 
-async def visit(context,link, new_page):
-    try:
-        await new_page.goto(link, wait_until='load')
-        await asyncio.sleep(3)
-    except Exception as e:
-        await new_page.close()
-        new_page = await context.new_page()
-        await new_page.goto(link, wait_until='load')
-        await asyncio.sleep(3)
-
-async def main():
+async def scrape_auction_data(collection, link_collection):
+    start_time = datetime.now()
     playwright = await async_playwright().start()
     args = ["--disable-blink-features=AutomationControlled"]
-    browser = await playwright.chromium.launch(args=args, headless=False)#,proxy={'server': 'socks://localhost:9060'})
-    # browser = await playwright.chromium.launch(args=args, headless=False,proxy={'server': 'http://localhost:8080'})
+    browser = await playwright.chromium.launch(headless=False)
+
     context = await browser.new_context()
     page = await context.new_page()
-    await open_browser(page=page)
+    browse = await open_browser(page=page, weblink="https://www.copart.com/login/") 
+    await asyncio.sleep(20)
+
+    try:
+        email_input = await page.query_selector('#username')
+        email = "matti19913@gmail.com"
+        await email_input.fill(email)
+        password_input = await page.query_selector('#password')
+        password = "Copart2023!"
+        await password_input.fill(password)
+        await page.click('text=Remember?')
+        await page.click('text=Sign Into Your Account')
+        await asyncio.sleep(20)
+    except:
+        print("Bot detected")
+        await page.close()
+        await browser.close()
+        return
+        # link_collection.update_one({'link': auction_link}, {'$set': {'Info': 'None'}})
+
+    count=0
+    data={}
+
+    # cursor = link_collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "Processing"}})
+    # auction_link = cursor['link']
+    # print(auction_link)
+    # await page.goto(auction_link, wait_until='load')
+    await page.goto("https://www.copart.com/auctionDashboard")
+    await asyncio.sleep(30)
+
+    iframe_element=await page.query_selector('div.auction5iframe')
+    iframe=await iframe_element.query_selector("iframe")
+    content = await iframe.content_frame()
+
     await asyncio.sleep(5)
-
-    # Find the email input field by its ID
-    email_input = await page.query_selector('#username')
-    email = "matti19913@gmail.com"
-    await email_input.fill(email)
-
-    password_input = await page.query_selector('#password')
-    await password_input.fill('')
-    password = "Copart2023!"
-    await password_input.fill(password)
-
-    await page.click('text=Remember?')
-    await page.click('text=Sign Into Your Account')
+    print("Opening links")
+    count=10 if link_collection.count_documents({"Info": "None"})>9 else link_collection.count_documents({"Info": "None"})
+    # Setting the limit of auctions to be added 
+    while len(await content.query_selector_all('gridster-item.ng-star-inserted'))<count:
+        add_auction=await content.wait_for_selector('span.nav-option-on.addauctionbtn')
+        await asyncio.sleep(3)
+        await add_auction.click()
+        all_auctions=await content.query_selector_all('text.ng-star-inserted')
+    
+    baseauction_url="https://www.copart.com/auctionDashboard?auctionDetails="
     await asyncio.sleep(5)
+    # checking auction sections
+    all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
 
-    load_dotenv()
-    client = pymongo.MongoClient(os.getenv("MONGO_URI"))
-    db = client['Copart']
-    collection = db['Cars']
-    new_page = await context.new_page()
-
-    count = 0
-
+    # For managing the auction
+    collected_auctions=set()
+    for check in all_auctions:
+        join_button=await check.query_selector_all('tr.liveAuction.ng-star-inserted')
+        for i in join_button:
+            locale=await i.query_selector('div.yardName-MACRO')
+            auction_locale=await locale.get_attribute('title')
+            auction_locale=auction_locale.split(" - ")[-1]
+            auction_locale = re.sub(r'(\d)([A-Za-z])$', r'\1-\2', auction_locale)
+            # clicking on the join button
+            complete_link = baseauction_url+auction_locale
+            if not link_collection.find_one({"link": complete_link,"Info": "None"}):
+                pass
+            else:
+                link_collection.find_one_and_update({"link": complete_link}, {"$set": {"Info": "Processing"}})
+                collected_auctions.add(baseauction_url+auction_locale)
+                print(auction_locale)
+                await i.click()
+                break
+        await asyncio.sleep(2)
+    
+    iframe_element=await page.query_selector('div.auction5iframe')
+    iframe=await iframe_element.query_selector("iframe")
+    content = await iframe.content_frame()
+    all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
+    await asyncio.sleep(20)
     while True:
-        Document = collection.find_one_and_update({"Info.Name": None}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+        count+=1
 
-        logged_out = False
-        
-        if not Document:
-            await asyncio.sleep(3)
-            Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
-            if not Document:
-                break
-
-        carLink = Document['carLink']
-
-        link = carLink.replace("https://www.copart.com", "")
-        print(link)
-
-        if count > 40:
-            count=0
-            print("Closing the browser after 100 cars")
-            await new_page.close()
-            new_page = await context.new_page()
-            await asyncio.sleep(30)
-            await visit(context,carLink, new_page)
-        else:
+        for check in all_auctions:
+            # For extracting data from auction
+            car_link=await check.query_selector('a.titlelbl.ellipsis')
             try:
-                await visit(context,carLink, new_page)
-            except TimeoutError:
-                print("TimeoutError")
-                continue
+                link=await car_link.get_attribute("href")
+                # print(link)
+                if "https" in link:
+                    car_price=await check.query_selector('text.ng-star-inserted')
+                    checked=await car_price.text_content()
+                    price=checked.replace("\n","").replace(" ","")
+                    if "$" in price:
+                        data[link]=price
 
-        MainInfo = OrderedDict()
-        try:
-            name_section = await new_page.query_selector('h1.title.my-0')
-            name = await name_section.inner_text()
-            MainInfo['Name'] = name
-        except:
-            if await new_page.is_visible('h2.subtitle-404'):
-                print("Maybe the car is sold")
-                collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
-                continue
+                # Convert price to a number, assuming it's a string like "$1000"
+                new_price = float(price.replace("$", "").replace(",","")) if price and "$" in price else 0
+                if str(link) in data:
+                    # Get the existing price and convert it to a number
+                    existing_price = float(data[str(link)].replace("$", "").replace(",","")) if data[str(link)] else 0
 
-        image_section = await new_page.query_selector('.d-flex.thumbImgContainer')
-        if image_section:
-            images = await image_section.query_selector_all('img')
-            image_urls = [await image.get_attribute('src') for image in images]
-            image_urls = [url.replace("thb", "ful") for url in image_urls]
+                    # Update the price only if the new price is greater than the existing one
+                    if new_price > existing_price:
+                        data[str(link)] = price
 
-            image_names = []
-            for i in image_urls:
-                numeric_part = re.search(r'\d+', link).group()
-                ImageName = f'{name}-{numeric_part}-{image_urls.index(i)}.jpg'
-                image_names.append(ImageName)
-            print("Images Found")
-            subprocess.Popen(["python", "downloadNupload.py", name, link, json.dumps(image_urls)])
-            
-            MainInfo['Images'] = image_names
+                        # print({link: price}, end=' , ')
+                else:
+                    # If the identity link is not in data, add it
+                    data[str(link)] = price
+                # print({link: price}, end=' , ')
+            except:
+                pass
+        if count>20:
+            # print(data)
+            iframe_element=await page.query_selector('div.auction5iframe')
+            iframe=await iframe_element.query_selector("iframe")
+            content = await iframe.content_frame()
+            all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
+            count=0
 
-        try:
-            vehicle_info = OrderedDict()
-            vinfo = await new_page.wait_for_selector('div.panel-content.d-flex.f-g1.d-flex-column.full-width')
-            vinfo = await vinfo.query_selector('div.f-g2')
-            check = await vinfo.query_selector_all('div.d-flex')
-    
-            while check:
-                try:
-                    label, value = (await check.pop(0).inner_text()).split("\n")
-                    label = label.replace(":", "")
-                    vehicle_info[label] = value
-                    if "******" in value and "VIN" in label:
-                        logged_out=True
-                        break
-                except:
-                    break
-                
-            if logged_out:
-                collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
+            all_ended_auctions=[i for i in all_auctions if await i.query_selector('div.sale-end.text-center')]
+            if (len(all_auctions)==len(all_ended_auctions)) or (len(all_ended_auctions)>6):
+                print("No of auctions ended: ",len(all_ended_auctions))
+
+                await asyncio.sleep(2)
+                await page.close()
+                await browser.close()
+
+                data_list = [{"carLink": k, "price": v , "date": datetime.now(cdt).date().strftime("%d-%m-%Y").replace('-','.')} for k, v in data.items() if k != 'None' and v != ""]
+                carLink_list = [i['carLink'] for i in data_list]
+
+                subprocess.Popen(["python3", "check_link.py", ' '.join(carLink_list)])
+                print(f"Data captured of {len(data_list)} cars")
+                print(data_list)
+
+                from pymongo import UpdateOne
+                # Prepare bulk write operations
+                operations = []
+                for carsdata in data_list:
+                    price_obj = {"date": carsdata["date"], "price": carsdata["price"]}
+                    operations.append(
+                        UpdateOne(
+                            {"carLink": carsdata["carLink"]},
+                            {"$push": {"prices": price_obj}, "$setOnInsert": {"carLink": carsdata["carLink"]}},
+                            upsert=True
+                        )
+                    )
+
+                # Execute bulk write operations
+                collection.bulk_write(operations)
+
+                for auction in collected_auctions:
+                    link_collection.find_one_and_update({"link": auction}, {"$set": {"Info": "done"}})
                 break
 
-    
-            MainInfo['Vehicle Info'] = vehicle_info
-        except:
-            pass
+    # while True:
+    #     end_time = datetime.now()
+    #     # checking if it went 5 hours on auction and close it
+    #     if (end_time - start_time).total_seconds()/60>300:
+    #         print(f'Auction Closed {auction_link}')
+    #         await page.close()
+    #         await browser.close()
 
-        try:
-            sale_info = OrderedDict()
-            sinfo = await new_page.wait_for_selector("div.panel.clr.overflowHidden")
-            # sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
-            check = await sinfo.query_selector_all('div.d-flex')
-    
-            while check:
-                try:
-                    data = await check.pop(0).inner_text()
-                    if "\n\n" in data:
-                        label, value = data.split("\n\n")
-                        label = label.replace(":", "")
-                    elif "\n" in data:
-                        label, value = data.split("\n", 1)
-                        label = label.replace(":", "")
-                except:
-                    break
-                sale_info[label] = value
-    
-            MainInfo['Sale Info'] = sale_info
-        except:
-            pass
-        collection.update_one({"carLink": carLink}, {"$set": {"Info": MainInfo}})
-        count += 1
-        del Document
+    #         if not data:
+    #             return
 
-    await browser.close()
-    await playwright.stop()
+    #         data_list = [{"carLink": k, "price": v , "date": datetime.now(cdt).date().strftime("%d-%m-%Y").replace('-','.')} for k, v in data.items() if k != 'None' and v != ""]
+    #         carLink_list = [i['carLink'] for i in data_list]
 
-asyncio.run(main())
+    #         subprocess.Popen(["python3", "check_link.py", ' '.join(carLink_list)])
+    #         print(f"Data captured of {len(data_list)} cars")
+    #         print(data_list)
+
+    #         # Prepare bulk write operations
+    #         operations = []
+    #         for data in data_list:
+    #             price_obj = {"date": data["date"], "price": data["price"]}
+    #             operations.append(
+    #                 UpdateOne(
+    #                     {"carLink": data["carLink"]},
+    #                     {"$push": {"prices": price_obj}, "$setOnInsert": {"carLink": data["carLink"]}},
+    #                     upsert=True
+    #                 )
+    #             )
+
+    #         # Execute bulk write operations
+    #         collection.bulk_write(operations)
+    #         # collection.insert_many(data_list)
+            
+            
+    #         link_collection.update_one({'link': auction_link}, {'$set': {'Info': 'done'}})
+
+    #         return
+            
+    #     await page.wait_for_selector('div.AuctionContainer.event__item')
+    #     multiple_auc_in_single_page = await page.query_selector_all('div.AuctionContainer.event__item')
+    #     # auctioning_completed = await page.query_selector_all("div.event-empty__content")
+    #     auctioning_completed = await page.query_selector_all('h2.event-empty__title[data-translate="AuctionCompleted"]')
+    #     # print(f'Number of auctions in the page: {len(multiple_auc_in_single_page)}')
+    #     # print(f'Number of auctions completed: {len(auctioning_completed)}')
+    #     if (len(auctioning_completed)>0) and (len(auctioning_completed) == len(multiple_auc_in_single_page)) and ((end_time - start_time).total_seconds()/60 > 30):
+
+    #         print(f'Auction Closed {auction_link}')
+    #         await page.close()
+    #         await browser.close()
+
+    #         if not data:
+    #             return
+
+    #         data_list = [{"carLink": k, "price": v , "date": datetime.now(cdt).date().strftime("%d-%m-%Y").replace('-','.')} for k, v in data.items() if k != 'None' and v != ""]
+    #         carLink_list = [i['carLink'] for i in data_list]
+
+    #         subprocess.Popen(["python3", "check_link.py", ' '.join(carLink_list)])
+    #         print(f"Data captured of {len(data_list)} cars")
+    #         print(data_list)
+
+    #         # Prepare bulk write operations
+    #         operations = []
+    #         for data in data_list:
+    #             price_obj = {"date": data["date"], "price": data["price"]}
+    #             operations.append(
+    #                 UpdateOne(
+    #                     {"carLink": data["carLink"]},
+    #                     {"$push": {"prices": price_obj}, "$setOnInsert": {"carLink": data["carLink"]}},
+    #                     upsert=True
+    #                 )
+    #             )
+
+    #         # Execute bulk write operations
+    #         collection.bulk_write(operations)
+    #         # collection.insert_many(data_list)
+            
+            
+    #         link_collection.update_one({'link': auction_link}, {'$set': {'Info': 'done'}})
+
+    #         return
+    #     else:
+    #         if multiple_auc_in_single_page:
+    #             for auc in multiple_auc_in_single_page:
+    #                 content = await auc.query_selector('span.stock-number')
+    #                 if content is None:
+    #                     continue
+    #                 internal_link = await content.query_selector('a')
+    #                 if internal_link is None:
+    #                     continue
+    #                 else:
+    #                     identity = await internal_link.get_attribute('href')
+
+    #                 try:
+    #                     price=None
+    #                     await auc.wait_for_selector('div.js-BidActions')
+    #                     content = await auc.query_selector('div.js-BidActions')
+    #                     high_bid_element = await content.query_selector("span.high-bid__amount")
+    #                     if high_bid_element is not None:
+    #                         price = await high_bid_element.inner_text()
+    #                     else:
+    #                         bid_now_element = await content.query_selector("span.bid-now__amount")
+    #                         if bid_now_element is not None:
+    #                             price = await bid_now_element.inner_text()
+    #                             del bid_now_element
+    #                         else:
+    #                             price = ""
+    #                 except:
+    #                     if not price:
+    #                         price = ""
+    #                     continue
+
+    #                 # Convert price to a number, assuming it's a string like "$1000"
+    #                 new_price = float(price.replace("$", "").replace(",","")) if price else 0
+
+    #                 # Check if the identity link is in data
+    #                 if str(identity) in data:
+    #                     # Get the existing price and convert it to a number
+    #                     existing_price = float(data[str(identity)].replace("$", "").replace(",","")) if data[str(identity)] else 0
+                    
+    #                     # Update the price only if the new price is greater than the existing one
+    #                     if new_price > existing_price:
+    #                         data[str(identity)] = price
+    #                         print({identity: price}, end=' , ')
+    #                 else:
+    #                     # If the identity link is not in data, add it
+    #                     data[str(identity)] = price
+    #                     print({identity: price}, end=' , ')
+                    
+    #                 del content, internal_link, identity, price, high_bid_element, auc
+    #                 await asyncio.sleep(2.3)
+    
+
+# Usage
+asyncio.run(scrape_auction_data(collection, link_collection))
