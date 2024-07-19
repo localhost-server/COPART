@@ -60,7 +60,7 @@ async def main():
     count = 0
 
     while True:
-        Document = collection.find_one_and_update({"Info.Name": None}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+        Document = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
 
         logged_out = False
         
