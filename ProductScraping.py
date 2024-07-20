@@ -129,7 +129,7 @@ async def main():
                     vehicle_info[label] = value
                     if "******" in value and "VIN" in label:
                         logged_out=True
-                        break
+                        # break
                 except:
                     break
                 
