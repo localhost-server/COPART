@@ -127,15 +127,33 @@ async def main():
                     label, value = (await check.pop(0).inner_text()).split("\n")
                     label = label.replace(":", "")
                     vehicle_info[label] = value
-                    if "******" in value and "VIN" in label:
-                        logged_out=True
-                        break
+                    # if "******" in value and "VIN" in label:
+                    #     logged_out=True
+                    #     break
                 except:
                     break
                 
-            if logged_out:
-                collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
-                break
+            # if logged_out:
+            #     collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
+            #     weblink = "https://www.copart.com/login/"
+            #     await page.goto(weblink, wait_until='load')
+            #     await asyncio.sleep(5)
+
+            #     # Find the email input field by its ID
+            #     email_input = await page.query_selector('#username')
+            #     email = "matti19913@gmail.com"
+            #     await email_input.fill(email)
+
+            #     password_input = await page.query_selector('#password')
+            #     await password_input.fill('')
+            #     password = "Copart2023!"
+            #     await password_input.fill(password)
+
+            #     await page.click('text=Remember?')
+            #     await page.click('text=Sign Into Your Account')
+            #     await asyncio.sleep(5000)
+                
+            #     continue
 
     
             MainInfo['Vehicle Info'] = vehicle_info
