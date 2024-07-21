@@ -67,9 +67,6 @@ while True:
                 if process2:
                     process2.terminate()
                     process2.communicate()
-                if process3:
-                    process3.terminate()
-                    process3.communicate()
         else:
             # Sleep for the remaining part of the hour
             time.sleep(3600 - now.minute * 60)
