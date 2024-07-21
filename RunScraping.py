@@ -3,7 +3,7 @@ import subprocess
 import time
 import pytz
 import os
-
+import psutil
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -23,30 +23,30 @@ cdt=pytz.timezone('America/Chicago')
 
 process=None
 
+# Function to get current system memory usage
+def get_system_memory_usage():
+    memory = psutil.virtual_memory()
+    return memory.percent  # return memory usage in percentage
+
 while True:
+    if get_system_memory_usage() > 30:
+        time.sleep(3600) 
 
     # Get the current time
-    now = datetime.now(cdt)
+    # now = datetime.now(cdt)
 
     # Format the time to hours and minutes
-    time_string = now.strftime("%H:%M")
+    # time_string = now.strftime("%H:%M")
 
     # Get the day of the week
-    day_of_week = now.strftime("%A")
+    # day_of_week = now.strftime("%A")
 
     # print("Current Time =", time_string)
     # print("Day of the Week =", day_of_week)
     
     # Checking the count of Cars with None Info
-    count = collection.count_documents({"Info": "None"})
-    # if count>=500:
-    #     print("Found Cars with None Info In Database \nStarting scraping them")
-    #     process = subprocess.Popen(["python3", "ProductScraping.py"])
-    #     process.wait()  # Wait for the process to complete
-    #     del process  # Delete the process
-    
-    # if count """and (time_string>="19:00""" and (day_of_week in weekdays)):
-    if count and (day_of_week in weekdays):
+    elif collection.count_documents({"Info": "None"}):
+   
         print("Time to run the script")
         # if not process:
         process = subprocess.Popen(["python3", "ProductScraping.py"])
@@ -77,6 +77,7 @@ while True:
 
         del aggregation_process
 
-        break
-
+        # break
+    else:
+        time.sleep(3600)
     # time.sleep(3600)  # Sleep for an hour before checking again
