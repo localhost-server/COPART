@@ -50,11 +50,11 @@ while True:
                     process1.communicate()
                     process2.communicate()
 
-                    time.sleep(300)  # Wait for 5 minutes before initializing the next process
-                    process3 = subprocess.Popen(["python3", "RunScraping.py"])
-                    process3.wait()
-                    process3.terminate()
-                    process3.communicate()
+                    # time.sleep(300)  # Wait for 5 minutes before initializing the next process
+                    # process3 = subprocess.Popen(["python3", "RunScraping.py"])
+                    # process3.wait()
+                    # process3.terminate()
+                    # process3.communicate()
                     process_initialized = True
                 
         
