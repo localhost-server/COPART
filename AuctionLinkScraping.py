@@ -12,7 +12,7 @@ async def open_browser(page):
     # weblink="https://www.iaai.com/LiveAuctionsCalendar"
     weblink="https://www.copart.com/login/"
     await page.goto(weblink, wait_until='load')
-    await asyncio.sleep(5)
+    await asyncio.sleep(20)
     # Find the email input field by its ID
     email_input = await page.query_selector('#username')
     # Enter the desired content
