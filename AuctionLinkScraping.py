@@ -92,7 +92,7 @@ async def main():
         collection = db['AuctionLinks']
 
         # Clearing all data from collection
-        # collection.delete_many({})
+        collection.delete_many({})
 
         await fetch_live_auctions(browser,page,collection)
 
