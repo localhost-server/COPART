@@ -23,7 +23,7 @@ while True:
         # Print time in hours minutes
         print(f'Today is Auction - Day of the week: {day_of_week} - Time: {nowtime}')
         # Check if it's time to run the scripts
-        if nowtime >= "07:30" :
+        if nowtime >= "08:45" :
             print('Checking for scripts execution...')
 
             # Initialize process flags
