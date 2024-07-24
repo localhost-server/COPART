@@ -45,8 +45,8 @@ while True:
     # print("Day of the Week =", day_of_week)
     
     # Checking the count of Cars with None Info
-    elif collection.count_documents({"Info": "None"}):
-   
+    elif collection.count_documents({"Info": "None"}) or collection.count_documents({"Info":"processing"}):
+
         print("Time to run the script")
         # if not process:
         process = subprocess.Popen(["python3", "ProductScraping.py"])
