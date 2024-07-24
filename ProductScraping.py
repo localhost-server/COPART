@@ -137,8 +137,9 @@ async def main():
                         label = label.replace(":", "")
                         vehicle_info[label] = value
                         if "******" in value and "VIN" in label:
-                            logged_out=True
-                            break
+                            if page.query_selector('a.btn.btn-sign-in'):
+                                logged_out=True
+                                break
                     except:
                         break
                     
@@ -203,8 +204,9 @@ async def main():
                         label = label.replace(":", "")
                         vehicle_info[label] = value
                         if "******" in value and "VIN" in label:
-                            logged_out=True
-                            break
+                            if page.query_selector('a.btn.btn-sign-in'):
+                                logged_out=True
+                                break
                     except:
                         break
                     
