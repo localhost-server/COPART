@@ -115,6 +115,8 @@ async def scrape_auction_data(collection, link_collection):
     all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
     await asyncio.sleep(20)
     while True:
+        end_time = datetime.now()
+        
         count+=1
 
         for check in all_auctions:
@@ -156,7 +158,7 @@ async def scrape_auction_data(collection, link_collection):
             count=0
 
             all_ended_auctions=[i for i in all_auctions if await i.query_selector('div.sale-end.text-center')]
-            if (len(all_auctions)==len(all_ended_auctions)) :
+            if (len(all_auctions)==len(all_ended_auctions)) or ((end_time - start_time).total_seconds()/60>900):
                 print("No of auctions ended: ",len(all_ended_auctions))
 
                 await asyncio.sleep(2)
