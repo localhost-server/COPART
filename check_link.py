@@ -8,11 +8,11 @@ load_dotenv()
 
 def process_link(link):
     if collection.find_one({"carLink": link}):
-        print(f"Car {link} already in the database")
+        # print(f"Car {link} already in the database")
         pass
     else:
         collection.insert_one({"carLink": link, "Info": "None"})
-        print(f"Car {link} added to the database with NONE")
+        # print(f"Car {link} added to the database with NONE")
 
 # Create a new client
 client = pymongo.MongoClient(os.getenv("MONGO_URI"))
