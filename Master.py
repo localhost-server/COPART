@@ -2,6 +2,8 @@ from datetime import datetime
 import subprocess
 import time
 import pytz
+import os
+import sys
 
 # Define the weekdays on which to run the scripts
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -56,8 +58,8 @@ while True:
                     # process3.terminate()
                     # process3.communicate()
                     process_initialized = True
+                    print('ALL COMPLETED')
                 
-        
             except Exception as e:
                 print(f"Error: {e}")
                 # Terminate the processes if an error occurs
@@ -75,4 +77,6 @@ while True:
         process_initialized = False
         
         # Sleep for 6 hours before checking again
+        print("Sleeping of 6 hours")
         time.sleep(3600 * 6)
+        os.execv(__file__, ['python'] + sys.argv)
