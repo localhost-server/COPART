@@ -50,6 +50,8 @@ async def fetch_live_auctions(browser , page, collection):
             await asyncio.sleep(300)
             print("No Auctions Found \nClosing the browser")
             await browser.close()
+            # Clearing all data from collection
+            collection.delete_many({"Info":"None"})
             break
 
         while all_auctions:
