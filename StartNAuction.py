@@ -116,6 +116,7 @@ async def scrape_auction_data(collection, link_collection):
     await asyncio.sleep(20)
     while True:
         end_time = datetime.now()
+        initial_count=len(data)
         
         count+=1
 
@@ -149,6 +150,7 @@ async def scrape_auction_data(collection, link_collection):
                 # print({link: price}, end=' , ')
             except:
                 pass
+        final_count=len(data)
         if count>20:
             # print(data)
             iframe_element=await page.query_selector('div.auction5iframe')
@@ -158,7 +160,7 @@ async def scrape_auction_data(collection, link_collection):
             count=0
 
             all_ended_auctions=[i for i in all_auctions if await i.query_selector('div.sale-end.text-center')]
-            if (len(all_auctions)==len(all_ended_auctions)) or ((end_time - start_time).total_seconds()/60>900):
+            if (len(all_auctions)==len(all_ended_auctions)) or ((end_time - start_time).total_seconds()/60>600) or ((final_count-initial_count)==0 and (end_time - start_time).total_seconds()/60>120):
                 print("No of auctions ended: ",len(all_ended_auctions))
 
                 await asyncio.sleep(2)
