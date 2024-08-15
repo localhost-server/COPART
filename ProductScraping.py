@@ -71,6 +71,8 @@ async def main():
                 break
 
         carLink = Document['carLink']
+        if "https://www.copart.com" not in carLink:
+            collection.delete_one({"carLink": carLink})
 
         link = carLink.replace("https://www.copart.com", "")
         print(link)
