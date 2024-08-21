@@ -86,6 +86,7 @@ async def main():
             await visit(context,carLink, new_page)
         else:
             try:
+                await asyncio.sleep(1.5)
                 await visit(context,carLink, new_page)
             except TimeoutError:
                 print("TimeoutError")
