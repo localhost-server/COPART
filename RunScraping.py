@@ -27,7 +27,7 @@ process=None
 def get_system_memory_usage():
     memory = psutil.virtual_memory()
     return memory.percent  # return memory usage in percentage
-
+time.sleep(36000)
 while True:
     if get_system_memory_usage() > 30:
         time.sleep(3600) 
