@@ -100,15 +100,16 @@ async def main():
             MainInfo['Name'] = name
             type1=True
         except:
-            name_section = await new_page.query_selector('h1.p-m-0')
-            name = await name_section.inner_text()
-            MainInfo['Name'] = name
-            type1=False
-        except:
-            if await new_page.is_visible('h2.subtitle-404'):
-                print("Maybe the car is sold")
-                collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
-                continue
+            try:
+                name_section = await new_page.query_selector('h1.p-m-0')
+                name = await name_section.inner_text()
+                MainInfo['Name'] = name
+                type1=False
+            except:
+                if await new_page.is_visible('h2.subtitle-404'):
+                    print("Maybe the car is sold")
+                    collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
+                    continue
         finally:
             print("Nothing Found")
             collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
