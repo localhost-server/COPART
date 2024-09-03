@@ -34,7 +34,7 @@ async def open_auctions():
         document = collection.find_one({'Info': "None"},sort=[("creation_time", ASCENDING)])
         if document is not None:
             # Check system memory usage
-            while get_system_memory_usage() > 80:
+            while get_system_memory_usage() > 60:
                 await asyncio.sleep(600)  # Wait for 10 minutes before checking again
 
             # link = document['link']
