@@ -90,23 +90,28 @@ async def scrape_auction_data(collection, link_collection):
 
     # For managing the auction
     collected_auctions=set()
+    aucCount=0
     for check in all_auctions:
+        aucCount+=1
         join_button=await check.query_selector_all('tr.liveAuction.ng-star-inserted')
-        for i in join_button:
-            locale=await i.query_selector('div.yardName-MACRO')
-            auction_locale=await locale.get_attribute('title')
-            auction_locale=auction_locale.split(" - ")[-1]
-            auction_locale = re.sub(r'(\d)([A-Za-z])$', r'\1-\2', auction_locale)
-            # clicking on the join button
-            complete_link = baseauction_url+auction_locale
-            if not link_collection.find_one({"link": complete_link,"Info": "None"}):
-                pass
-            else:
-                link_collection.find_one_and_update({"link": complete_link}, {"$set": {"Info": "Processing"}})
-                collected_auctions.add(baseauction_url+auction_locale)
-                print(auction_locale)
-                await i.click()
-                break
+        if join_button:
+            for i in join_button:
+                locale=await i.query_selector('div.yardName-MACRO')
+                auction_locale=await locale.get_attribute('title')
+                auction_locale=auction_locale.split(" - ")[-1]
+                auction_locale = re.sub(r'(\d)([A-Za-z])$', r'\1-\2', auction_locale)
+                # clicking on the join button
+                complete_link = baseauction_url+auction_locale
+                if not link_collection.find_one({"link": complete_link,"Info": "None"}):
+                    pass
+                else:
+                    link_collection.find_one_and_update({"link": complete_link}, {"$set": {"Info": "Processing"}})
+                    collected_auctions.add(baseauction_url+auction_locale)
+                    print(auction_locale)
+                    await i.click()
+                    break
+        if aucCount>5:
+            all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
         await asyncio.sleep(2)
     
     iframe_element=await page.query_selector('div.auction5iframe')
