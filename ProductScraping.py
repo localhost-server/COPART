@@ -106,14 +106,15 @@ async def main():
                 MainInfo['Name'] = name
                 type1=False
             except:
-                if await new_page.is_visible('h2.subtitle-404'):
-                    print("Maybe the car is sold")
-                    collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
+                try:
+                    if await new_page.is_visible('h2.subtitle-404'):
+                        print("Maybe the car is sold")
+                        collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
+                        continue
+                except:
+                    print("Nothing Found")
+                    collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
                     continue
-        finally:
-            print("Nothing Found")
-            collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
-            continue
 
         if type1:
             image_section = await new_page.query_selector('.d-flex.thumbImgContainer')
