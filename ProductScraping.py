@@ -19,12 +19,12 @@ async def open_browser(page):
 
 async def visit(context,link, new_page):
     try:
-        await new_page.goto(link, wait_until='load')
+        await new_page.goto(link)
         await asyncio.sleep(3)
     except Exception as e:
         await new_page.close()
         new_page = await context.new_page()
-        await new_page.goto(link, wait_until='load')
+        await new_page.goto(link)
         await asyncio.sleep(3)
 
 async def main():
