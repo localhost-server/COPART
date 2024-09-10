@@ -76,11 +76,11 @@ while True:
         del aggregation_process
 
         # DB Merging
-        merging_process = subprocess.Popen(["python3", "mergedDB.py"])
-        merging_process.wait()
-        merging_process.terminate()
-        merging_process.communicate()
-        del merging_process
+        # merging_process = subprocess.Popen(["python3", "mergedDB.py"])
+        # merging_process.wait()
+        # merging_process.terminate()
+        # merging_process.communicate()
+        # del merging_process
 
         # break
     else:
