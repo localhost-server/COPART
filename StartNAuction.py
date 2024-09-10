@@ -176,6 +176,13 @@ async def scrape_auction_data(collection, link_collection):
                 carLink_list = [i['carLink'] for i in data_list]
 
                 subprocess.Popen(["python3", "check_link.py", ' '.join(carLink_list)])
+
+                # Check if no data got captured then directly break the loop
+                if len(data_list) == 0:
+                    for auction in collected_auctions:
+                        link_collection.find_one_and_update({"link": auction}, {"$set": {"Info": "done"}})
+                    break
+                
                 print(f"Data captured of {len(data_list)} cars")
                 print(data_list)
 
