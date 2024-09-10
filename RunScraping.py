@@ -28,11 +28,10 @@ def get_system_memory_usage():
     memory = psutil.virtual_memory()
     return memory.percent  # return memory usage in percentage
     
-target_time = "08:20"
-
 while True:
     if datetime.now(cdt).strftime("%H:%M")<="16:00":
         continue
+        
     if get_system_memory_usage() > 30:
         time.sleep(3600) 
 
