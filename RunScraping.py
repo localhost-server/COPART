@@ -27,19 +27,14 @@ process=None
 def get_system_memory_usage():
     memory = psutil.virtual_memory()
     return memory.percent  # return memory usage in percentage
+    
+target_time = "08:20"
 
 while True:
+    if datetime.now(cdt).strftime("%H:%M")<="16:00":
+        continue
     if get_system_memory_usage() > 30:
         time.sleep(3600) 
-
-    # Get the current time
-    # now = datetime.now(cdt)
-
-    # Format the time to hours and minutes
-    # time_string = now.strftime("%H:%M")
-
-    # Get the day of the week
-    # day_of_week = now.strftime("%A")
 
     # print("Current Time =", time_string)
     # print("Day of the Week =", day_of_week)
