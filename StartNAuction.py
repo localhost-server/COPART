@@ -75,7 +75,7 @@ async def scrape_auction_data(collection, link_collection):
 
     await asyncio.sleep(5)
     print("Opening links")
-    count=10 if link_collection.count_documents({"Info": "None"})>9 else link_collection.count_documents({"Info": "None"})
+    count=9 if link_collection.count_documents({"Info": "None"})>8 else link_collection.count_documents({"Info": "None"})
     # Setting the limit of auctions to be added 
     while len(await content.query_selector_all('gridster-item.ng-star-inserted'))<count:
         add_auction=await content.wait_for_selector('span.nav-option-on.addauctionbtn')
