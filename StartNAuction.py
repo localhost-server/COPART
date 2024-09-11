@@ -129,8 +129,15 @@ async def scrape_auction_data(collection, link_collection):
         count+=1
 
         for check in all_auctions:
+            # deleting previous link and price
+            if link or price or carlink:
+                del link
+                del price
+                del carlink
+            
             # For extracting data from auction
             car_link=await check.query_selector('a.titlelbl.ellipsis')
+            
             try:
                 link=await car_link.get_attribute("href")
                 # print(link)
