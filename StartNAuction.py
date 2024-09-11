@@ -119,6 +119,9 @@ async def scrape_auction_data(collection, link_collection):
     content = await iframe.content_frame()
     all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
     await asyncio.sleep(20)
+    
+    exclusions = {"", "Bid", "Bonus", "Soldon", "Bidding", "NextItemon"}
+    
     while True:
         end_time = datetime.now()
         initial_count=len(data)
@@ -172,7 +175,17 @@ async def scrape_auction_data(collection, link_collection):
                 await page.close()
                 await browser.close()
 
-                data_list = [{"carLink": k, "price": int(v.replace("$",'').replace(",",'')) , "date": datetime.now(cdt).date().strftime("%d-%m-%Y").replace('-','.')} for k, v in data.items() if "https://www.copart.com/" in k and v != ""]
+                # data_list = [{"carLink": k, "price": int(v.replace("$",'').replace(",",'')) , "date": datetime.now(cdt).date().strftime("%d-%m-%Y").replace('-','.')} for k, v in data.items() if "https://www.copart.com/" in k and v != "" and v!="Bid" and v!="Bonus" and v!="Soldon" and v!="Bonus" and v!="Bidding" and v!="NextItemon"]
+                data_list = [
+                    {
+                        "carLink": k,
+                        "price": int(v.replace("$", '').replace(",", '')),
+                        "date": datetime.now(cdt).strftime("%d.%m.%Y")
+                    }
+                    for k, v in data.items() 
+                    if "https://www.copart.com/" in k and v not in exclusions
+                ]
+
                 carLink_list = [i['carLink'] for i in data_list]
 
                 subprocess.Popen(["python3", "check_link.py", ' '.join(carLink_list)])
