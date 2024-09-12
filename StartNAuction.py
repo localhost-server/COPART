@@ -159,13 +159,14 @@ async def scrape_auction_data(collection, link_collection):
                     # If the identity link is not in data, add it
                     data[str(link)] = price
                 # print({link: price}, end=' , ')
+            
+                if link or price or carlink:
+                    del link
+                    del price
+                    del carlink
             except:
                 pass
                 
-            if link or price or carlink:
-                del link
-                del price
-                del carlink
                 
         final_count=len(data)
         if count>20:
