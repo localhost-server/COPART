@@ -120,7 +120,7 @@ async def scrape_auction_data(collection, link_collection):
     all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
     await asyncio.sleep(20)
     
-    exclusions = {"", "Bid", "Bonus", "Soldon", "Bidding", "NextItemon"}
+    exclusions = {"", "Bid", "Bonus", "Soldon", "Bidding", "NextItemon","Sold!"}
     
     while True:
         end_time = datetime.now()
