@@ -95,7 +95,7 @@ async def main():
                 continue
 
         MainInfo = OrderedDict()
-
+        
         try:
             name_section = await new_page.query_selector('h1.title.my-0')
             name = await name_section.inner_text()
@@ -116,9 +116,10 @@ async def main():
                         continue
                 except:
                     print("Nothing Found")
-                    collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
+                    # collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
+                    collection.delete_one({"carLink": carLink})
                     continue
-
+                    
         if type1:
             image_section = await new_page.query_selector('.d-flex.thumbImgContainer')
             if image_section:
