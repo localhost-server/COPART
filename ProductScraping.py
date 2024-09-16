@@ -68,7 +68,7 @@ async def main():
             await asyncio.sleep(3)
             Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
             if not Document:
-                Document = collection.find_one({"Info.Name":{"$exists":False}}, sort=[("creation_time", ASCENDING)])
+                Document = collection.find_one_and_update({"Info.Name":{"$exists":False}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
                 if not Document:
                     break
 
