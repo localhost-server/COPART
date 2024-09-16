@@ -68,7 +68,9 @@ async def main():
             await asyncio.sleep(3)
             Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
             if not Document:
-                break
+                Document = collection.find_one({"Info.Name":{"$exists":False}}, sort=[("creation_time", ASCENDING)])
+                if not Document:
+                    break
 
         carLink = Document['carLink']
         if "https://www.copart.com" not in carLink:
@@ -109,7 +111,8 @@ async def main():
                 try:
                     if await new_page.is_visible('h2.subtitle-404'):
                         print("Maybe the car is sold")
-                        collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
+                        # collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
+                        collection.delete_one({"carLink": carLink})
                         continue
                 except:
                     print("Nothing Found")
