@@ -113,13 +113,17 @@ async def main():
                         print("Maybe the car is sold")
                         # collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
                         collection.delete_one({"carLink": carLink})
+                        passAll=True
                         continue
                 except:
                     print("Nothing Found")
                     # collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
                     collection.delete_one({"carLink": carLink})
+                    passAll=True
                     continue
-                    
+        if passAll:
+            collection.delete_one({"carLink": carLink})
+            continue
         if type1:
             image_section = await new_page.query_selector('.d-flex.thumbImgContainer')
             if image_section:
