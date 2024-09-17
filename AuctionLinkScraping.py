@@ -1,5 +1,8 @@
 import asyncio
 import pymongo
+import os
+from dotenv import load_dotenv
+
 # from undetected_playwright.async_api import async_playwright
 from playwright.async_api import async_playwright
 import asyncio
@@ -89,7 +92,8 @@ async def main():
         await navigate_to_auctions(page)
         await asyncio.sleep(5)
 
-        client = pymongo.MongoClient('mongodb://adminUser:securePassword@45.56.127.88/?authSource=admin')
+        load_dotenv()
+        client = pymongo.MongoClient(os.getenv("MONGO_URI"))
         db = client['Copart']
         collection = db['AuctionLinks']
 
