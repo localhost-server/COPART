@@ -79,11 +79,11 @@ async def fetch_live_auctions(browser , page, collection):
 async def main():
     async with async_playwright() as playwright:
 
-        args = []
+        # args = []
         # disable navigator.webdriver:true flag
-        args.append("--disable-blink-features=AutomationControlled")
+        # args.append("--disable-blink-features=AutomationControlled")
         # browser = await playwright.chromium.launch(args=args,headless=False)
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.firefox.launch(headless=False)
 
         context = await browser.new_context()
         page = await context.new_page()
