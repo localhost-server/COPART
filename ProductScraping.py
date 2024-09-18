@@ -21,12 +21,12 @@ async def open_browser(page):
 async def visit(context,link, new_page):
     try:
         await new_page.goto(link)
-        await asyncio.sleep(3)
+        await asyncio.sleep(2)
     except Exception as e:
         await new_page.close()
         new_page = await context.new_page()
         await new_page.goto(link)
-        await asyncio.sleep(3)
+        await asyncio.sleep(2)
 
 async def main():
     playwright = await async_playwright().start()
@@ -66,7 +66,7 @@ async def main():
         logged_out = False
         
         if not Document:
-            await asyncio.sleep(3)
+            await asyncio.sleep(1)
             Document = collection.find_one_and_update({"Info.Name":{"$exists":False},"Info":{"$ne":"processing"}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
             if not Document:
                 Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
@@ -85,11 +85,11 @@ async def main():
             print("Closing the browser after 100 cars")
             await new_page.close()
             new_page = await context.new_page()
-            await asyncio.sleep(30)
+            await asyncio.sleep(10)
             await visit(context,carLink, new_page)
         else:
             try:
-                await asyncio.sleep(1.5)
+                await asyncio.sleep(1)
                 await visit(context,carLink, new_page)
             except TimeoutError:
                 print("TimeoutError")
