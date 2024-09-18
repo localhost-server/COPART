@@ -35,7 +35,7 @@ async def scrape_auction_data(collection, link_collection):
     start_time = datetime.now()
     playwright = await async_playwright().start()
     args = ["--disable-blink-features=AutomationControlled"]
-    browser = await playwright.firefox.launch(headless=True)
+    browser = await playwright.firefox.launch(headless=False)
 
     context = await browser.new_context()
     page = await context.new_page()
@@ -144,26 +144,26 @@ async def scrape_auction_data(collection, link_collection):
                     if "$" in price:
                         data[link]=price
 
-                # Convert price to a number, assuming it's a string like "$1000"
-                new_price = float(price.replace("$", "").replace(",","")) if price and "$" in price else 0
-                if str(link) in data:
-                    # Get the existing price and convert it to a number
-                    existing_price = float(data[str(link)].replace("$", "").replace(",","")) if data[str(link)] else 0
-
-                    # Update the price only if the new price is greater than the existing one
-                    if new_price > existing_price:
-                        data[str(link)] = price
-
+                        # Convert price to a number, assuming it's a string like "$1000"
+                        new_price = float(price.replace("$", "").replace(",","")) if price and "$" in price else 0
+                        if str(link) in data:
+                            # Get the existing price and convert it to a number
+                            existing_price = float(data[str(link)].replace("$", "").replace(",","")) if data[str(link)] else 0
+        
+                            # Update the price only if the new price is greater than the existing one
+                            if new_price > existing_price:
+                                data[str(link)] = price
+        
+                                # print({link: price}, end=' , ')
+                        else:
+                            # If the identity link is not in data, add it
+                            data[str(link)] = price
                         # print({link: price}, end=' , ')
-                else:
-                    # If the identity link is not in data, add it
-                    data[str(link)] = price
-                # print({link: price}, end=' , ')
-            
-                if link or price or carlink:
-                    del link
-                    del price
-                    del carlink
+                    
+                        if link or price or carlink:
+                            del link
+                            del price
+                            del carlink
             except:
                 pass
                 
