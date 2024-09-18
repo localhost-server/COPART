@@ -8,5 +8,4 @@ aiohttp
 python-dotenv
 BS4
 pytz
-undetected-playwright-patch
 ipykernel
