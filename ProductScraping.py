@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 async def open_browser(page):
     await page.emulate_media(color_scheme='dark')
     weblink = "https://www.copart.com/login/"
-    await page.goto(weblink, wait_until='load')
+    # await page.goto(weblink, wait_until='load')
+    await page.goto(weblink)
     return page
 
 async def visit(context,link, new_page):
