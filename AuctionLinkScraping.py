@@ -39,6 +39,20 @@ async def open_browser(page):
 async def navigate_to_auctions(page):
     await page.goto("https://www.copart.com/todaysAuction")
 
+async def get_links(auction,collection):
+    try:
+        link_element = await auction.get_attribute('href')
+        relative_url = link_element.lstrip('.')
+        whole_url = "https://www.copart.com"+relative_url
+
+        if collection.find_one({'link': whole_url}) is None:
+            print(f"Inderting URL {whole_url}")
+            # Upload the link to MongoDB
+            collection.insert_one({'link': whole_url, 'Info': "None"})
+    except Exception as e:
+        print(e)
+        
+
 async def fetch_live_auctions(browser , page, collection):
     live_auctions=[]
 
@@ -57,23 +71,9 @@ async def fetch_live_auctions(browser , page, collection):
             collection.delete_many({"Info":"None"})
             break
 
-        while all_auctions:
-            auction = all_auctions.pop()
-            try:
-                link_element = await auction.get_attribute('href')
-                relative_url = link_element.lstrip('.')
-                whole_url = "https://www.copart.com"+relative_url
+        tasks=[get_links(auction,collection) for auction in all_auctions]
+        await asyncio.gather(*tasks)
 
-                if collection.find_one({'link': whole_url}) is None:
-                    print(f"Inderting URL {whole_url}")
-                    # Upload the link to MongoDB
-                    collection.insert_one({'link': whole_url, 'Info': "None"})
-
-                else:
-                    pass
-            except Exception as e:
-                print(e)
-                pass
         await asyncio.sleep(2700)
 
 async def main():
