@@ -235,7 +235,8 @@ async def main():
             collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
             if await page.query_selector("a.btn.btn-sign-in"):  
                 weblink = "https://www.copart.com/login/"
-                await page.goto(weblink, wait_until='load')
+                # await page.goto(weblink, wait_until='load')
+                await page.goto(weblink)
                 await asyncio.sleep(5)
     
                 # Find the email input field by its ID
