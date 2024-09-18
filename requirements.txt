@@ -1,6 +1,6 @@
 pyautogui
 pymongo
-playwright==1.40
+playwright
 asyncio
 motor
 boto3
