@@ -4,6 +4,7 @@ from playwright.async_api import async_playwright
 import subprocess 
 import asyncio
 import pymongo
+from pprint import pprint
 from pymongo import UpdateOne
 from dotenv import load_dotenv
 import os
@@ -30,6 +31,39 @@ async def open_browser(page, weblink):
     await page.emulate_media(color_scheme='dark')
     await page.goto(weblink, wait_until='load')
     return page
+
+async def process_auction(check,data):
+    # data={}
+    try:
+        car_link = await check.query_selector('a.titlelbl.ellipsis')
+        link = await car_link.get_attribute("href")
+        car_price = await check.query_selector('text.ng-star-inserted')
+        checked = await car_price.text_content()
+        price = checked.replace("\n", "").replace(" ", "")
+        if "$" in price:
+            data[link] = price
+
+            # Convert price to a number, assuming it's a string like "$1000"
+            new_price = float(price.replace("$", "").replace(",", "")) if price and "$" in price else 0
+            if str(link) in data:
+                # Get the existing price and convert it to a number
+                existing_price = float(data[str(link)].replace("$", "").replace(",", "")) if data[str(link)] else 0
+
+                # Update the price only if the new price is greater than the existing one
+                if new_price > existing_price:
+                    data[str(link)] = price
+
+                    # print({link: price}, end=' , ')
+            else:
+                # If the identity link is not in data, add it
+                data[str(link)] = price
+            print({link: price}, end=' , ') 
+
+        # return data
+    except Exception as e:
+        # return {}
+        # print(f"Error in process_auction : {e}")
+        pass
 
 async def scrape_auction_data(collection, link_collection):
     start_time = datetime.now()
@@ -62,12 +96,8 @@ async def scrape_auction_data(collection, link_collection):
     count=0
     data={}
 
-    # cursor = link_collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "Processing"}})
-    # auction_link = cursor['link']
-    # print(auction_link)
-    # await page.goto(auction_link, wait_until='load')
     await page.goto("https://www.copart.com/auctionDashboard")
-    await asyncio.sleep(30)
+    await asyncio.sleep(20)
 
     iframe_element=await page.query_selector('div.auction5iframe')
     iframe=await iframe_element.query_selector("iframe")
@@ -75,7 +105,7 @@ async def scrape_auction_data(collection, link_collection):
 
     await asyncio.sleep(5)
     print("Opening links")
-    count=9 if link_collection.count_documents({"Info": "None"})>8 else link_collection.count_documents({"Info": "None"})
+    count=15 if link_collection.count_documents({"Info": "None"})>14 else link_collection.count_documents({"Info": "None"})
     # Setting the limit of auctions to be added 
     while len(await content.query_selector_all('gridster-item.ng-star-inserted'))<count:
         add_auction=await content.wait_for_selector('span.nav-option-on.addauctionbtn')
@@ -110,7 +140,7 @@ async def scrape_auction_data(collection, link_collection):
                     print(auction_locale)
                     await i.click()
                     break
-        if aucCount>5:
+        if aucCount>8:
             all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
         await asyncio.sleep(2)
     
@@ -128,49 +158,13 @@ async def scrape_auction_data(collection, link_collection):
         
         count+=1
 
-        for check in all_auctions:
-            # deleting previous link and price
-            
-            # For extracting data from auction
-            car_link=await check.query_selector('a.titlelbl.ellipsis')
-            
-            try:
-                link=await car_link.get_attribute("href")
-                # print(link)
-                if "https" in link:
-                    car_price=await check.query_selector('text.ng-star-inserted')
-                    checked=await car_price.text_content()
-                    price=checked.replace("\n","").replace(" ","")
-                    if "$" in price:
-                        data[link]=price
+        tasks = [process_auction(check,data) for check in all_auctions]
+        await asyncio.gather(*tasks)
+        print(data)
 
-                        # Convert price to a number, assuming it's a string like "$1000"
-                        new_price = float(price.replace("$", "").replace(",","")) if price and "$" in price else 0
-                        if str(link) in data:
-                            # Get the existing price and convert it to a number
-                            existing_price = float(data[str(link)].replace("$", "").replace(",","")) if data[str(link)] else 0
-        
-                            # Update the price only if the new price is greater than the existing one
-                            if new_price > existing_price:
-                                data[str(link)] = price
-        
-                                # print({link: price}, end=' , ')
-                        else:
-                            # If the identity link is not in data, add it
-                            data[str(link)] = price
-                        # print({link: price}, end=' , ')
-                    
-                        if link or price or carlink:
-                            del link
-                            del price
-                            del carlink
-            except:
-                pass
-                
-                
         final_count=len(data)
-        if count>20:
-            # print(data)
+        if count>25:
+            # pprint(data)
             iframe_element=await page.query_selector('div.auction5iframe')
             iframe=await iframe_element.query_selector("iframe")
             content = await iframe.content_frame()
