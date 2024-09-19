@@ -9,11 +9,7 @@ import asyncio
 import subprocess
 
 async def open_browser(page):
-    # await page.set_viewport_size({'width': 1920, 'height': 1080})
-    # await page.set_viewport_size({'width': 1600, 'height': 1080})
     await page.emulate_media(color_scheme='dark')
-    # weblink="https://www.iaai.com"
-    # weblink="https://www.iaai.com/LiveAuctionsCalendar"
     weblink="https://www.copart.com/login/"
     await page.goto(weblink, wait_until='load')
     await asyncio.sleep(20)
