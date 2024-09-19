@@ -161,11 +161,11 @@ async def scrape_auction_data(collection, link_collection,linkWiseCol):
 
         tasks = [process_auction(check,data) for check in all_auctions]
         await asyncio.gather(*tasks)
-        if len(data)!=0:
-            print(data)
 
         final_count=len(data)
         if count>25:
+            if len(data)!=0:
+                print(data)
             # pprint(data)
             iframe_element=await page.query_selector('div.auction5iframe')
             iframe=await iframe_element.query_selector("iframe")
