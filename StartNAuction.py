@@ -66,7 +66,7 @@ async def process_auction(check,data):
         # print(f"Error in process_auction : {e}")
         pass
 
-async def scrape_auction_data(collection, link_collection):
+async def scrape_auction_data(collection, link_collection,linkWiseCol):
     start_time = datetime.now()
     playwright = await async_playwright().start()
     args = ["--disable-blink-features=AutomationControlled"]
@@ -225,4 +225,4 @@ async def scrape_auction_data(collection, link_collection):
                 linkWiseCol.insert_one({'Date':datetime.now(cdt).strftime("%d.%m.%Y"),"AuctionLinks":[i for i in collected_auctions],'DataCount':len(data_list)})
                 break
 # Usage
-asyncio.run(scrape_auction_data(collection, link_collection))
+asyncio.run(scrape_auction_data(collection, link_collection,linkWiseCol))
