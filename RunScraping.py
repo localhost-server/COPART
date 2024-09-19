@@ -33,6 +33,7 @@ while True:
     print(check_time)
     if check_time>="08:00" and check_time<="16:00":
         print("Time is less than 4:00 PM")
+        time.sleep(600) 
         continue
         
     if get_system_memory_usage() > 30:
