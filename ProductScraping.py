@@ -21,12 +21,12 @@ async def open_browser(page):
 async def visit(context,link, new_page):
     try:
         await new_page.goto(link)
-        await asyncio.sleep(2.5)
+        await asyncio.sleep(3)
     except Exception as e:
         await new_page.close()
         new_page = await context.new_page()
         await new_page.goto(link)
-        await asyncio.sleep(2.5)
+        await asyncio.sleep(3)
 
 async def main():
     playwright = await async_playwright().start()
@@ -62,9 +62,7 @@ async def main():
 
     while True:
         Document = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
-
         logged_out = False
-        
         if not Document:
             Document = collection.find_one_and_update({"Info.Name":{"$exists":False},"Info":{"$ne":"processing"}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
             if not Document:
