@@ -66,7 +66,7 @@ async def main():
         if not Document:
             Document = collection.find_one_and_update({"Info.Name":{"$exists":False},"Info":{"$ne":"processing"}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
             if not Document:
-                Document = collection.find_one_and_update({"Info.Vehicle Info.VIN":{"$exists":false}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+                Document = collection.find_one_and_update({"Info.Vehicle Info.VIN":{"$exists":False}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
                 if not Document:
                     Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
                     if not Document:
