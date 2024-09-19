@@ -31,7 +31,7 @@ async def visit(context,link, new_page):
 async def main():
     playwright = await async_playwright().start()
     args = ["--disable-blink-features=AutomationControlled"]
-    browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
+    browser = await playwright.firefox.launch(headless=True)#,proxy={'server': 'socks://localhost:9060'})
     # browser = await playwright.chromium.launch(args=args, headless=False,proxy={'server': 'http://localhost:8080'})
     context = await browser.new_context()
     page = await context.new_page()
