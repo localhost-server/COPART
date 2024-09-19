@@ -29,10 +29,14 @@ def get_system_memory_usage():
     return memory.percent  # return memory usage in percentage
     
 while True:
-    if datetime.now(cdt).strftime("%H:%M")<="16:00":
+    check_time = datetime.now(cdt).strftime("%H:%M")
+    print(check_time)
+    if check_time>="08:00" and check_time<="16:00":
+        print("Time is less than 4:00 PM")
         continue
         
     if get_system_memory_usage() > 30:
+        print("Memory Usage is more than 30%")
         time.sleep(3600) 
 
     # print("Current Time =", time_string)
