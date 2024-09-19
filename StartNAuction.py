@@ -23,6 +23,7 @@ db = client['Copart']
 # Get a reference to the collection
 collection = db['CarsPrice']
 link_collection = db['AuctionLinks']
+linkWiseCol=db['DLCount']
 
 # Setting CDT timezone
 cdt=pytz.timezone('America/Chicago')
@@ -221,6 +222,7 @@ async def scrape_auction_data(collection, link_collection):
 
                 for auction in collected_auctions:
                     link_collection.find_one_and_update({"link": auction}, {"$set": {"Info": "done"}})
+                linkWiseCol.insert_one({'Date':datetime.now(cdt).strftime("%d.%m.%Y"),"AuctionLinks":[i for i in collected_auctions],'DataCount':len(data_list)})
                 break
 # Usage
 asyncio.run(scrape_auction_data(collection, link_collection))
