@@ -161,7 +161,8 @@ async def scrape_auction_data(collection, link_collection,linkWiseCol):
 
         tasks = [process_auction(check,data) for check in all_auctions]
         await asyncio.gather(*tasks)
-        print(data)
+        if len(data)!=0:
+            print(data)
 
         final_count=len(data)
         if count>25:
