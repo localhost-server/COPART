@@ -57,7 +57,7 @@ async def process_auction(check,data):
             else:
                 # If the identity link is not in data, add it
                 data[str(link)] = price
-            print({link: price}, end=' , ') 
+            # print({link: price}, end=' , ') 
 
         # return data
     except Exception as e:
@@ -201,7 +201,7 @@ async def scrape_auction_data(collection, link_collection):
                     break
                 
                 print(f"Data captured of {len(data_list)} cars")
-                print(data_list)
+                # print(data_list)
 
                 from pymongo import UpdateOne
                 # Prepare bulk write operations
