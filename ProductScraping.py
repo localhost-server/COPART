@@ -6,10 +6,15 @@ import subprocess
 from collections import OrderedDict
 import pymongo
 from pymongo import ASCENDING
+import datetime
 import os
 import json
 import re
 from dotenv import load_dotenv
+from datetime import datetime
+import pytz
+# Setting CDT timezone
+cdt=pytz.timezone('America/Chicago')
 
 async def open_browser(page):
     await page.emulate_media(color_scheme='dark')
