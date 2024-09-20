@@ -60,7 +60,10 @@ async def main():
 
     count = 0
 
-    while True:
+    check_time = datetime.now(cdt).strftime("%H:%M")
+    while check_time>="08:00" and check_time<="16:00":
+        check_time = datetime.now(cdt).strftime("%H:%M")
+        
         Document = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
         logged_out = False
         if not Document:
