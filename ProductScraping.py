@@ -31,7 +31,7 @@ async def visit(context,link, new_page):
 async def main():
     playwright = await async_playwright().start()
     args = ["--disable-blink-features=AutomationControlled"]
-    browser = await playwright.firefox.launch(headless=True)#,proxy={'server': 'socks://localhost:9060'})
+    browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
     # browser = await playwright.chromium.launch(args=args, headless=False,proxy={'server': 'http://localhost:8080'})
     context = await browser.new_context()
     page = await context.new_page()
@@ -153,6 +153,7 @@ async def main():
                         label = label.replace(":", "")
                         vehicle_info[label] = value
                         if "******" in value and "VIN" in label:
+                            await asyncio.sleep(5)
                             if await page.query_selector('a.btn.btn-sign-in'):
                                 logged_out=True
                                 break
@@ -214,22 +215,6 @@ async def main():
                 vinfo = await new_page.wait_for_selector('div.lot-details-section.vehicle-info')
                 check = await vinfo.query_selector_all('div.lot-details-info')
 
-                while check:
-                    try:
-                        label, value = (await check.pop(0).inner_text()).split("\n")
-                        label = label.replace(":", "")
-                        vehicle_info[label] = value
-                        if "******" in value and "VIN" in label:
-                            if await page.query_selector('a.btn.btn-sign-in'):
-                                logged_out=True
-                                break
-                    except:
-                        break
-                    
-                MainInfo['Vehicle Info'] = vehicle_info
-            except:
-                pass
-
         if logged_out:
             collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
             if await page.query_selector("a.btn.btn-sign-in"):  
@@ -253,6 +238,23 @@ async def main():
                 await asyncio.sleep(30)
                 logged_out=False
                 continue
+                while check:
+                    try:
+                        label, value = (await check.pop(0).inner_text()).split("\n")
+                        label = label.replace(":", "")
+                        vehicle_info[label] = value
+                        if "******" in value and "VIN" in label:
+                            await asyncio.sleep(5)
+                            if await page.query_selector('a.btn.btn-sign-in'):
+                                logged_out=True
+                                break
+                    except:
+                        break
+                    
+                MainInfo['Vehicle Info'] = vehicle_info
+            except:
+                pass
+
 
 
         collection.update_one({"carLink": carLink}, {"$set": {"Info": MainInfo}})
