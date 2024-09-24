@@ -28,8 +28,7 @@ def get_system_memory_usage():
 
 # Iterate over the documents in the MongoDB collection where 'Info' is sNone
 async def open_auctions():
-    # while datetime.now(cdt).strftime("%H:%M") >= "08:05" and datetime.now(cdt).strftime("%H:%M") <= "15:00":
-    # while datetime.now(cdt).strftime("%H:%M") <= "23:00":
+    await asyncio.sleep(60)
     while (collection.count_documents({'Info': "None"}) > 0) :#and (datetime.now(cdt).strftime("%H:%M") <= "23:59"):
         document = collection.find_one({'Info': "None"},sort=[("creation_time", ASCENDING)])
         if document is not None:
@@ -37,12 +36,7 @@ async def open_auctions():
             while get_system_memory_usage() > 70:
                 await asyncio.sleep(600)  # Wait for 10 minutes before checking again
 
-            # link = document['link']
-            # Open the link
             subprocess.Popen(["python3","StartNAuction.py"])
-
-            # Update the 'Info' field in the MongoDB collection
-            # collection.update_one({'link': link}, {'$set': {'Info': 'processing'}})
 
             await asyncio.sleep(300)  # Wait for 2 minutes before checking again
         else:
