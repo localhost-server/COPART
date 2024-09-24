@@ -50,7 +50,7 @@ while True:
         print("Time to run the script")
         # if not process:
         process = subprocess.Popen(["python3", "ProductScraping.py"])
-        # time.sleep(30)
+        time.sleep(600)
         # process1 = subprocess.Popen(["python3", "ProductScraping.py"])
         # time.sleep(30)
         # process2 = subprocess.Popen(["python3", "ProductScraping.py"])
