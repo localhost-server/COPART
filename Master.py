@@ -27,7 +27,6 @@ while True:
             print(f'Time is {now_time}. Running scripts for {day_of_week}...')
             
             # Run the processes
-            time.sleep(300)  # Wait 5 minutes before starting the next process
             subprocess.Popen(["python3", "AuctionLinkScraping.py"])
             time.sleep(300)
             
