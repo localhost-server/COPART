@@ -30,11 +30,11 @@ def get_system_memory_usage():
 async def open_auctions():
     # while datetime.now(cdt).strftime("%H:%M") >= "08:05" and datetime.now(cdt).strftime("%H:%M") <= "15:00":
     # while datetime.now(cdt).strftime("%H:%M") <= "23:00":
-    while (collection.count_documents({'Info': "None"}) > 0) and (datetime.now(cdt).strftime("%H:%M") <= "23:59"):
+    while (collection.count_documents({'Info': "None"}) > 0) :#and (datetime.now(cdt).strftime("%H:%M") <= "23:59"):
         document = collection.find_one({'Info': "None"},sort=[("creation_time", ASCENDING)])
         if document is not None:
             # Check system memory usage
-            while get_system_memory_usage() > 60:
+            while get_system_memory_usage() > 70:
                 await asyncio.sleep(600)  # Wait for 10 minutes before checking again
 
             # link = document['link']
@@ -44,7 +44,7 @@ async def open_auctions():
             # Update the 'Info' field in the MongoDB collection
             # collection.update_one({'link': link}, {'$set': {'Info': 'processing'}})
 
-            await asyncio.sleep(240)  # Wait for 2 minutes before checking again
+            await asyncio.sleep(300)  # Wait for 2 minutes before checking again
         else:
             await asyncio.sleep(600)
             # break
