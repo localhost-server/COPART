@@ -2,11 +2,15 @@ import asyncio
 import pymongo
 import os
 from dotenv import load_dotenv
-
+from datetime import datetime
+import pytz
 # from undetected_playwright.async_api import async_playwright
 from playwright.async_api import async_playwright
 import asyncio
 import subprocess
+
+# Setting CDT timezone
+cdt=pytz.timezone('America/Chicago')
 
 async def open_browser(page):
     await page.emulate_media(color_scheme='dark')
@@ -51,26 +55,28 @@ async def get_links(auction,collection):
 
 async def fetch_live_auctions(browser , page, collection):
     live_auctions=[]
+    start=datetime.now()
 
-    while True:
+    while datetime.now(cdt).strftime("%H:%M")<="23:30":
 
-        await page.reload(wait_until='load')
+        await page.reload()
         await asyncio.sleep(30)
 
         all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
         
         if len(all_auctions)==0:
-            await asyncio.sleep(300)
-            print("No Auctions Found \nClosing the browser")
-            await browser.close()
-            # Clearing all data from collection
-            collection.delete_many({"Info":"None"})
+            print("No Auctions Found \n")
+            await asyncio.sleep(600)
             break
+        else:
+            tasks=[get_links(auction,collection) for auction in all_auctions]
+            await asyncio.gather(*tasks)
+            await asyncio.sleep(2700)
 
-        tasks=[get_links(auction,collection) for auction in all_auctions]
-        await asyncio.gather(*tasks)
-
-        await asyncio.sleep(2700)
+    await asyncio.sleep(300)
+    await browser.close()
+    # Clearing all data from collection
+    collection.delete_many({"Info":"None"})
 
 async def main():
     async with async_playwright() as playwright:
