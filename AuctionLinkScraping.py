@@ -53,46 +53,45 @@ async def get_links(auction,collection):
         print(e)
         
 
-async def fetch_live_auctions(browser , page, collection):
-    live_auctions=[]
-    start=datetime.now()
+async def fetch_live_auctions(browser , collection):
 
     while datetime.now(cdt).strftime("%H:%M")<="23:30":
 
+        context = await browser.new_context()
+        page = await context.new_page()
+        # await open_browser(page)
+        await asyncio.sleep(5)
+        await navigate_to_auctions(page)
+        await asyncio.sleep(5)
+
         await page.reload()
-        await asyncio.sleep(30)
+        await asyncio.sleep(10)
 
         all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
         
         if len(all_auctions)==0:
             print("No Auctions Found \n")
             await asyncio.sleep(600)
-            break
         else:
             tasks=[get_links(auction,collection) for auction in all_auctions]
             await asyncio.gather(*tasks)
-            await asyncio.sleep(2700)
+            await asyncio.sleep(300)
 
-    await asyncio.sleep(300)
+        print("Closing the page and context")
+        await page.close()
+        await context.close()
+
+    # Will check after an hour
+    await asyncio.sleep(60*60)
+
+    print("Closing the browser")
+    await asyncio.sleep(2)
     await browser.close()
     # Clearing all data from collection
     collection.delete_many({"Info":"None"})
 
 async def main():
     async with async_playwright() as playwright:
-
-        # args = []
-        # disable navigator.webdriver:true flag
-        # args.append("--disable-blink-features=AutomationControlled")
-        # browser = await playwright.chromium.launch(args=args,headless=False)
-        browser = await playwright.firefox.launch(headless=False)
-
-        context = await browser.new_context()
-        page = await context.new_page()
-        await open_browser(page)
-        await asyncio.sleep(5)
-        await navigate_to_auctions(page)
-        await asyncio.sleep(5)
 
         load_dotenv()
         client = pymongo.MongoClient(os.getenv("MONGO_URI"))
@@ -101,8 +100,9 @@ async def main():
 
         # Clearing all data from collection
         collection.delete_many({})
+        browser = await playwright.firefox.launch(headless=False)
 
-        await fetch_live_auctions(browser,page,collection)
+        await fetch_live_auctions(browser,collection)
 
 if __name__ == "__main__":
     asyncio.run(main())
