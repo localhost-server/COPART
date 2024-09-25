@@ -71,11 +71,11 @@ async def fetch_live_auctions(browser , collection):
         
         if len(all_auctions)==0:
             print("No Auctions Found \n")
-            await asyncio.sleep(600)
+            await asyncio.sleep(60*120)
         else:
             tasks=[get_links(auction,collection) for auction in all_auctions]
             await asyncio.gather(*tasks)
-            await asyncio.sleep(300)
+            await asyncio.sleep(3600)
 
         print("Closing the page and context")
         await page.close()
@@ -85,7 +85,7 @@ async def fetch_live_auctions(browser , collection):
     await asyncio.sleep(60*60)
 
     print("Closing the browser")
-    await asyncio.sleep(2)
+    await asyncio.sleep(20)
     await browser.close()
     # Clearing all data from collection
     collection.delete_many({"Info":"None"})
