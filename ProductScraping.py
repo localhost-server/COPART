@@ -245,28 +245,29 @@ async def main():
                 pass
 
         if logged_out:
-            collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
-            if await page.query_selector("a.btn.btn-sign-in"):  
-                weblink = "https://www.copart.com/login/"
-                # await page.goto(weblink, wait_until='load')
-                await page.goto(weblink)
-                await asyncio.sleep(5)
+            break
+            # collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
+            # if await page.query_selector("a.btn.btn-sign-in"):  
+            #     weblink = "https://www.copart.com/login/"
+            #     # await page.goto(weblink, wait_until='load')
+            #     await page.goto(weblink)
+            #     await asyncio.sleep(5)
     
-                # Find the email input field by its ID
-                email_input = await page.query_selector('#username')
-                email = "matti19913@gmail.com"
-                await email_input.fill(email)
+            #     # Find the email input field by its ID
+            #     email_input = await page.query_selector('#username')
+            #     email = "matti19913@gmail.com"
+            #     await email_input.fill(email)
     
-                password_input = await page.query_selector('#password')
-                await password_input.fill('')
-                password = "Copart2023!"
-                await password_input.fill(password)
+            #     password_input = await page.query_selector('#password')
+            #     await password_input.fill('')
+            #     password = "Copart2023!"
+            #     await password_input.fill(password)
     
-                await page.click('text=Remember?')
-                await page.click('text=Sign Into Your Account')
-                await asyncio.sleep(30)
-                logged_out=False
-                continue
+            #     await page.click('text=Remember?')
+            #     await page.click('text=Sign Into Your Account')
+            #     await asyncio.sleep(30)
+            #     logged_out=False
+            #     continue
 
 
         collection.update_one({"carLink": carLink}, {"$set": {"Info": MainInfo}})
