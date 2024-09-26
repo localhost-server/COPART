@@ -10,7 +10,7 @@ weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 cdt = pytz.timezone('America/Chicago')
 
 # Set the specific time to start the process (08:20 AM)
-target_time = "00:00"
+target_time = "08:20"
 
 while True:
     # Get the current time and day of the week
