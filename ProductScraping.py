@@ -64,8 +64,8 @@ async def main():
     new_page = await context.new_page()
 
     count = 0
-
-    while True:
+    start_time = datetime.now()
+    while ((datetime.now() - start_time).total_seconds()/60)<120:
         check_time = datetime.now(cdt).strftime("%H:%M")
         if check_time>="08:00" and check_time<="16:00":
             print("Auction Time")
