@@ -66,6 +66,7 @@ async def main():
 
     count = 0
     start_time = datetime.now()
+    now = datetime.now(cdt)
     day_of_week = now.strftime("%A")
     
     while ((datetime.now() - start_time).total_seconds()/60)<60:
