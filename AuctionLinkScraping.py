@@ -67,15 +67,16 @@ async def fetch_live_auctions(browser , collection):
         await page.reload()
         await asyncio.sleep(10)
 
-        all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
-        
-        if len(all_auctions)==0:
-            print("No Auctions Found \n")
-            await asyncio.sleep(60*120)
-        else:
-            tasks=[get_links(auction,collection) for auction in all_auctions]
-            await asyncio.gather(*tasks)
-            await asyncio.sleep(3600)
+        for i in range(5):
+            all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
+            if len(all_auctions)==0:
+                print("No Auctions Found \n")
+                await asyncio.sleep(60*120)
+                break
+            else:
+                tasks=[get_links(auction,collection) for auction in all_auctions]
+                await asyncio.gather(*tasks)
+                await asyncio.sleep(300)
 
         print("Closing the page and context")
         await page.close()
