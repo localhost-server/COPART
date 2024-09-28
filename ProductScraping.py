@@ -65,7 +65,7 @@ async def main():
 
     count = 0
     start_time = datetime.now()
-    while ((datetime.now() - start_time).total_seconds()/60)<120:
+    while ((datetime.now() - start_time).total_seconds()/60)<60:
         check_time = datetime.now(cdt).strftime("%H:%M")
         if check_time>="08:00" and check_time<="16:00":
             print("Auction Time")
