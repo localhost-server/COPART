@@ -31,8 +31,11 @@ def get_system_memory_usage():
 time.sleep(600) 
 while True:
     check_time = datetime.now(cdt).strftime("%H:%M")
+    now = datetime.now(cdt)
+    day_of_week = now.strftime("%A")
+    
     print(check_time)
-    if check_time>="08:00" and check_time<="16:00":
+    if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
         print("Time is less than 4:00 PM")
         time.sleep(600) 
         continue
