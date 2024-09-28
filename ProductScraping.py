@@ -15,6 +15,7 @@ from datetime import datetime
 import pytz
 # Setting CDT timezone
 cdt=pytz.timezone('America/Chicago')
+weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
 async def open_browser(page):
     await page.emulate_media(color_scheme='dark')
@@ -65,9 +66,11 @@ async def main():
 
     count = 0
     start_time = datetime.now()
+    day_of_week = now.strftime("%A")
+    
     while ((datetime.now() - start_time).total_seconds()/60)<60:
         check_time = datetime.now(cdt).strftime("%H:%M")
-        if check_time>="08:00" and check_time<="16:00":
+        if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
             print("Auction Time")
             break
             
