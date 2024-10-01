@@ -103,7 +103,7 @@ async def main():
         collection = db['AuctionLinks']
 
         # Clearing all data from collection
-        collection.delete_many({})
+        # collection.delete_many({})
         browser = await playwright.firefox.launch(headless=True)
 
         await fetch_live_auctions(browser,collection)
