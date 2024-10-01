@@ -66,6 +66,9 @@ async def fetch_live_auctions(browser , collection):
 
         await page.reload()
         await asyncio.sleep(10)
+        
+        # deleting all the data from the collection where Info is done
+        collection.delete_many({"Info":"done"})
 
         for i in range(5):
             all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
