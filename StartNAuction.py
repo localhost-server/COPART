@@ -144,6 +144,11 @@ async def scrape_auction_data(collection, link_collection,linkWiseCol):
         if aucCount>8:
             all_auctions=await content.query_selector_all('gridster-item.ng-star-inserted')
         await asyncio.sleep(2)
+
+    # Recent Made changes, if you think you need to remove this do investigate and then remove
+    if len(collected_auctions)==0:
+        link_collection.delete_many({"Info":"None"})
+        continue
     
     iframe_element=await page.query_selector('div.auction5iframe')
     iframe=await iframe_element.query_selector("iframe")
