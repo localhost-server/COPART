@@ -159,6 +159,14 @@ async def scrape_auction_data(collection, link_collection,linkWiseCol):
     exclusions = {"", "Bid", "Bonus", "Soldon", "Bidding", "NextItemon","Sold!"}
     
     while True:
+        # Recent Made changes, if you think you need to remove this do investigate and then remove
+        if len(collected_auctions)==0:
+            link_collection.delete_many({"Info":"None"})
+            await asyncio.sleep(2)
+            await page.close()
+            await browser.close()
+            break
+        
         end_time = datetime.now()
         initial_count=len(data)
         
