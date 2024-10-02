@@ -170,9 +170,9 @@ async def main():
                         vehicle_info[label] = value
                         if "******" in value and "VIN" in label:
                             await asyncio.sleep(5)
-                            if await page.query_selector('a.btn.btn-sign-in'):
-                                logged_out=True
-                                break
+                            # if await page.query_selector('a.btn.btn-sign-in'):
+                            logged_out=True
+                            break
                     except:
                         break
                     
@@ -238,9 +238,9 @@ async def main():
                         vehicle_info[label] = value
                         if "******" in value and "VIN" in label:
                             await asyncio.sleep(5)
-                            if await page.query_selector('a.btn.btn-sign-in'):
-                                logged_out=True
-                                break
+                            # if await page.query_selector('a.btn.btn-sign-in'):
+                            logged_out=True
+                            break
                     except:
                         break
                     
