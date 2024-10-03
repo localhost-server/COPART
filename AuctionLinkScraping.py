@@ -89,9 +89,7 @@ async def fetch_live_auctions(playwright , collection):
             # added exception later if though to remove it then remove it
             await browser.close()
             await asyncio.sleep(30)
-            browser = await playwright.firefox.launch(headless=True)
-            await asyncio.sleep(30)
-            await fetch_live_auctions(browser,collection)
+            await fetch_live_auctions(playwright,collection)
             
 
     # Will check after an hour
