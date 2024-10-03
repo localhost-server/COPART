@@ -1,9 +1,15 @@
 from pymongo import MongoClient
-
+import time
 # Requires the PyMongo package.
 # https://api.mongodb.com/python/current
 
 client = MongoClient('mongodb://adminUser:securePassword@45.56.127.88/?authSource=admin&tls=false')
+# Deleting all data
+db=client['MergedDB']
+col=db['IaaiCopart']
+col.delete_many({})
+time.sleep(120)
+
 result = client['Copart']['IntegratedData'].aggregate([
     {
         '$project': {
