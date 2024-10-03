@@ -56,34 +56,42 @@ async def get_links(auction,collection):
 async def fetch_live_auctions(browser , collection):
 
     while datetime.now(cdt).strftime("%H:%M")<="23:30":
-
-        context = await browser.new_context()
-        page = await context.new_page()
-        # await open_browser(page)
-        await asyncio.sleep(5)
-        await navigate_to_auctions(page)
-        await asyncio.sleep(5)
-
-        await page.reload()
-        await asyncio.sleep(10)
-        
-        # deleting all the data from the collection where Info is done
-        collection.delete_many({"Info":"done"})
-
-        for i in range(5):
-            all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
-            if len(all_auctions)==0:
-                print("No Auctions Found \n")
-                await asyncio.sleep(60*120)
-                break
-            else:
-                tasks=[get_links(auction,collection) for auction in all_auctions]
-                await asyncio.gather(*tasks)
-                await asyncio.sleep(300)
-
-        print("Closing the page and context")
-        await page.close()
-        await context.close()
+        try:
+            context = await browser.new_context()
+            page = await context.new_page()
+            # await open_browser(page)
+            await asyncio.sleep(5)
+            await navigate_to_auctions(page)
+            await asyncio.sleep(5)
+    
+            await page.reload()
+            await asyncio.sleep(10)
+            
+            # deleting all the data from the collection where Info is done
+            collection.delete_many({"Info":"done"})
+    
+            for i in range(5):
+                all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
+                if len(all_auctions)==0:
+                    print("No Auctions Found \n")
+                    await asyncio.sleep(60*120)
+                    break
+                else:
+                    tasks=[get_links(auction,collection) for auction in all_auctions]
+                    await asyncio.gather(*tasks)
+                    await asyncio.sleep(300)
+    
+            print("Closing the page and context")
+            await page.close()
+            await context.close()
+        except:
+            # added exception later if though to remove it then remove it
+            await browser.close()
+            await asyncio.sleep(30)
+            browser = await playwright.firefox.launch(headless=True)
+            await asyncio.sleep(30)
+            await fetch_live_auctions(browser,collection)
+            
 
     # Will check after an hour
     await asyncio.sleep(60*60)
