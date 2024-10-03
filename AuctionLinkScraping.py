@@ -53,10 +53,11 @@ async def get_links(auction,collection):
         print(e)
         
 
-async def fetch_live_auctions(browser , collection):
+async def fetch_live_auctions(playwright , collection):
 
     while datetime.now(cdt).strftime("%H:%M")<="23:30":
         try:
+            browser = await playwright.firefox.launch(headless=True)
             context = await browser.new_context()
             page = await context.new_page()
             # await open_browser(page)
@@ -112,9 +113,8 @@ async def main():
 
         # Clearing all data from collection
         # collection.delete_many({})
-        browser = await playwright.firefox.launch(headless=True)
 
-        await fetch_live_auctions(browser,collection)
+        await fetch_live_auctions(playwright,collection)
 
 if __name__ == "__main__":
     asyncio.run(main())
