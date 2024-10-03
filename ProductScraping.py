@@ -1,6 +1,6 @@
 # from playwright.async_api import async_playwright
 from playwright.async_api import async_playwright
-import time
+import psutil
 import asyncio
 import subprocess
 from collections import OrderedDict
@@ -16,6 +16,11 @@ import pytz
 # Setting CDT timezone
 cdt=pytz.timezone('America/Chicago')
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+# Function to get current system memory usage
+def get_system_memory_usage():
+    memory = psutil.virtual_memory()
+    return memory.percent  # return memory usage in percentage
 
 async def open_browser(page):
     await page.emulate_media(color_scheme='dark')
@@ -68,8 +73,9 @@ async def main():
     start_time = datetime.now()
     now = datetime.now(cdt)
     day_of_week = now.strftime("%A")
-    
-    while ((datetime.now() - start_time).total_seconds()/60)<60:
+
+    # checking if timing is matching and memory is used less than 40%
+    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 30) :
         check_time = datetime.now(cdt).strftime("%H:%M")
         if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
             print("Auction Time")
