@@ -37,12 +37,12 @@ while True:
     print(check_time)
     if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
         print("Time is less than 4:00 PM")
-        time.sleep(600) 
+        time.sleep(300) 
         continue
         
     if get_system_memory_usage() > 30:
         print("Memory Usage is more than 30%")
-        time.sleep(3600) 
+        time.sleep(300) 
 
     # print("Current Time =", time_string)
     # print("Day of the Week =", day_of_week)
