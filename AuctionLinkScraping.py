@@ -75,7 +75,7 @@ async def fetch_live_auctions(playwright , collection):
                 all_auctions=await page.query_selector_all('a.btn.btn-green.joinsearch.small')
                 if len(all_auctions)==0:
                     print("No Auctions Found \n")
-                    await asyncio.sleep(60*120)
+                    await asyncio.sleep(60*45)
                     break
                 else:
                     tasks=[get_links(auction,collection) for auction in all_auctions]
