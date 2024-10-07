@@ -28,6 +28,14 @@ while True:
             
             # Run the processes
             subprocess.Popen(["python3", "AuctionLinkScraping.py"])
+        
+            # DB Merging
+            merging_process = subprocess.Popen(["python3", "mergedDB.py"])
+            merging_process.wait()
+            merging_process.terminate()
+            merging_process.communicate()
+            del merging_process
+            
             time.sleep(300)
             
             # Wait until the next day
