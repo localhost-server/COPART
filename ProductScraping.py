@@ -186,7 +186,6 @@ async def main():
             except:
                 pass
 
-
             try:
                 sale_info = OrderedDict()
                 sinfo = await new_page.wait_for_selector("div.panel.clr.overflowHidden")
