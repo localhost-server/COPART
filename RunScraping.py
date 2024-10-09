@@ -27,7 +27,7 @@ def get_system_memory_usage():
     memory = psutil.virtual_memory()
     return memory.percent  # return memory usage in percentage
 
-time.sleep(600) 
+# time.sleep(600) 
 while True:
     check_time = datetime.now(cdt).strftime("%H:%M")
     now = datetime.now(cdt)
