@@ -22,7 +22,6 @@ weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 cdt=pytz.timezone('America/Chicago')
 
 process=None
-
 # Function to get current system memory usage
 def get_system_memory_usage():
     memory = psutil.virtual_memory()
