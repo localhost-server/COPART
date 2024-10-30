@@ -13,9 +13,11 @@ import re
 from dotenv import load_dotenv
 from datetime import datetime
 import pytz
+import random
 # Setting CDT timezone
 cdt=pytz.timezone('America/Chicago')
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+load_dotenv()
 
 # Function to get current system memory usage
 def get_system_memory_usage():
@@ -31,23 +33,32 @@ async def open_browser(page):
 
 async def visit(context,link, new_page):
     try:
-        await new_page.goto(link)
-        await asyncio.sleep(3)
+        await new_page.goto(link, wait_until='load')
+        await asyncio.sleep(5)
     except Exception as e:
         await new_page.close()
         new_page = await context.new_page()
-        await new_page.goto(link)
-        await asyncio.sleep(3)
+        await new_page.goto(link, wait_until='load')
+        await asyncio.sleep(5)
 
 async def main():
+    username = os.getenv("OxylabUser")
+    passwd = os.getenv("OxylabPass")
+    num=random.randint(1,21)
+    if num<10:
+        proxyserver = f'isp.oxylabs.io:800{num}'
+    else:
+        proxyserver = f'isp.oxylabs.io:80{num}'
+    print(proxyserver)
+    
     playwright = await async_playwright().start()
-    args = ["--disable-blink-features=AutomationControlled"]
-    browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
-    # browser = await playwright.chromium.launch(args=args, headless=False,proxy={'server': 'http://localhost:8080'})
-    context = await browser.new_context()
+    # browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
+    browser = await playwright.chromium.launch(headless=False,proxy={"server": proxyserver,"username": username,"password": passwd})
+    context = await browser.new_context() #{"server": "socks5://127.0.0.1:9051"})
+
     page = await context.new_page()
     await open_browser(page=page)
-    await asyncio.sleep(5)
+    await asyncio.sleep(10)
 
     # Find the email input field by its ID
     email_input = await page.query_selector('#username')
@@ -64,7 +75,7 @@ async def main():
     await asyncio.sleep(5)
 
     load_dotenv()
-    client = pymongo.MongoClient(os.getenv("MONGO_URI"))
+    client = pymongo.MongoClient(os.getenv("MONGOAUTH"))
     db = client['Copart']
     collection = db['Cars']
     new_page = await context.new_page()
@@ -75,7 +86,7 @@ async def main():
     day_of_week = now.strftime("%A")
 
     # checking if timing is matching and memory is used less than 40%
-    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 30) :
+    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 50) :
         check_time = datetime.now(cdt).strftime("%H:%M")
         if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
             print("Auction Time")
