@@ -86,7 +86,7 @@ async def main():
     day_of_week = now.strftime("%A")
 
     # checking if timing is matching and memory is used less than 40%
-    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 50) :
+    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 40) :
         check_time = datetime.now(cdt).strftime("%H:%M")
         if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
             print("Auction Time")
