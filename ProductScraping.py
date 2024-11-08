@@ -58,9 +58,9 @@ async def main():
     playwright = await async_playwright().start()
     if useproxy=="True":
         # browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
-        browser = await playwright.chromium.launch(headless=False,proxy={"server": proxyserver,"username": username,"password": passwd})
+        browser = await playwright.chromium.launch_persistent_context('',headless=False,proxy={"server": proxyserver,"username": username,"password": passwd})
     elif useproxy=="False":
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch_persistent_context('',headless=False)
     context = await browser.new_context() #{"server": "socks5://127.0.0.1:9051"})
 
     page = await context.new_page()
