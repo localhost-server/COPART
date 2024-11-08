@@ -44,6 +44,7 @@ async def visit(context,link, new_page):
 async def main():
     username = os.getenv("OxylabUser")
     passwd = os.getenv("OxylabPass")
+    useproxy = os.getenv("USEPROXY")
     num=random.randint(1,21)
     if num<10:
         proxyserver = f'isp.oxylabs.io:800{num}'
@@ -52,8 +53,11 @@ async def main():
     print(proxyserver)
     
     playwright = await async_playwright().start()
-    # browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
-    browser = await playwright.chromium.launch(headless=False,proxy={"server": proxyserver,"username": username,"password": passwd})
+    if useproxy=="True":
+        # browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
+        browser = await playwright.chromium.launch(headless=False,proxy={"server": proxyserver,"username": username,"password": passwd})
+    elif useproxy=="False":
+        browser = await playwright.chromium.launch(headless=False)
     context = await browser.new_context() #{"server": "socks5://127.0.0.1:9051"})
 
     page = await context.new_page()
@@ -86,7 +90,7 @@ async def main():
     day_of_week = now.strftime("%A")
 
     # checking if timing is matching and memory is used less than 40%
-    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 40) :
+    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 50) :
         check_time = datetime.now(cdt).strftime("%H:%M")
         if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
             print("Auction Time")
