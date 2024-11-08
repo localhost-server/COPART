@@ -42,14 +42,17 @@ async def visit(context,link, new_page):
         await asyncio.sleep(5)
 
 async def main():
-    username = os.getenv("OxylabUser")
-    passwd = os.getenv("OxylabPass")
+    # username = os.getenv("OxylabUser")
+    # passwd = os.getenv("OxylabPass")
+    username = os.getenv("BDUser")
+    passwd = os.getenv("BDPass")
     useproxy = os.getenv("USEPROXY")
     num=random.randint(1,21)
-    if num<10:
-        proxyserver = f'isp.oxylabs.io:800{num}'
-    else:
-        proxyserver = f'isp.oxylabs.io:80{num}'
+    # if num<10:
+    #     proxyserver = f'isp.oxylabs.io:800{num}'
+    # else:
+    #     proxyserver = f'isp.oxylabs.io:80{num}'
+    proxyserver = f'brd.superproxy.io:22225'
     print(proxyserver)
     
     playwright = await async_playwright().start()
