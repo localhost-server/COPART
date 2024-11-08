@@ -72,15 +72,19 @@ async def scrape_auction_data(collection, link_collection,linkWiseCol):
     playwright = await async_playwright().start()
     args = [f"--disable-extensions-except=./Capsolver",
     f"--load-extension=./Capsolver","--disable-blink-features=AutomationControlled"]
-    username = os.getenv("OxylabUser")
-    passwd = os.getenv("OxylabPass")
+    # username = os.getenv("OxylabUser")
+    # passwd = os.getenv("OxylabPass")
+    username = os.getenv("BDUser")
+    passwd = os.getenv("BDPass")
     useproxy = os.getenv("USEPROXY")
-
     num=random.randint(1,21)
-    if num<10:
-        proxy = f'isp.oxylabs.io:800{num}'
-    else:
-        proxy = f'isp.oxylabs.io:80{num}'
+    # if num<10:
+    #     proxyserver = f'isp.oxylabs.io:800{num}'
+    # else:
+    #     proxyserver = f'isp.oxylabs.io:80{num}'
+
+
+    proxy = f'brd.superproxy.io:22225'
     print(proxy)
 
     if useproxy=="True":
