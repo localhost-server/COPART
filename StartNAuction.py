@@ -11,11 +11,12 @@ import os
 from datetime import datetime
 import pytz
 import re
+import random
 
 load_dotenv()
 
 # Create a new client
-client = pymongo.MongoClient(os.getenv("MONGO_URI"))
+client = pymongo.MongoClient(os.getenv("MONGOAUTH"))
 
 # Get a reference to the database
 db = client['Copart']
@@ -69,11 +70,33 @@ async def process_auction(check,data):
 async def scrape_auction_data(collection, link_collection,linkWiseCol):
     start_time = datetime.now()
     playwright = await async_playwright().start()
-    args = ["--disable-blink-features=AutomationControlled"]
-    browser = await playwright.firefox.launch(headless=False)
+    args = [f"--disable-extensions-except=./Capsolver",
+    f"--load-extension=./Capsolver","--disable-blink-features=AutomationControlled"]
+    username = os.getenv("OxylabUser")
+    passwd = os.getenv("OxylabPass")
+    useproxy = os.getenv("USEPROXY")
 
-    context = await browser.new_context()
-    page = await context.new_page()
+    num=random.randint(1,21)
+    if num<10:
+        proxy = f'isp.oxylabs.io:800{num}'
+    else:
+        proxy = f'isp.oxylabs.io:80{num}'
+    print(proxy)
+
+    if useproxy=="True":
+        print("Using Proxy")
+        browser = await playwright.chromium.launch_persistent_context('',args=args,headless=False,
+                proxy={"server": proxy,
+                        "username": username,
+                        "password": passwd
+                        }  )
+    elif useproxy=="False":
+        print("Not Using Proxy")
+        browser = await playwright.chromium.launch_persistent_context('',args=args,headless=False)
+
+    # context = await browser.new_context()
+    page = await browser.new_page()
+
     browse = await open_browser(page=page, weblink="https://www.copart.com/login/") 
     await asyncio.sleep(20)
 
