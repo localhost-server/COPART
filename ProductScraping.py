@@ -1,281 +1,307 @@
+# from playwright.async_api import async_playwright
 from playwright.async_api import async_playwright
+import psutil
 import asyncio
-import time
+import subprocess
+from collections import OrderedDict
 import pymongo
 from pymongo import ASCENDING
+import datetime
 import os
-from dotenv import load_dotenv
 import json
-import subprocess
+import re
+from dotenv import load_dotenv
+from datetime import datetime
+import pytz
 import random
-
+# Setting CDT timezone
+cdt=pytz.timezone('America/Chicago')
+weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 load_dotenv()
 
-# reading extensionid.txt
-with open("extensionid.txt", "r") as file:
-    extension_id = file.read()
+# Function to get current system memory usage
+def get_system_memory_usage():
+    memory = psutil.virtual_memory()
+    return memory.percent  # return memory usage in percentage
 
 async def open_browser(page):
     await page.emulate_media(color_scheme='dark')
-    weblink = "https://www.iaai.com/Login/ExternalLogin?ReturnUrl=%2FDashboard%2FDefault"
-    await page.goto(weblink, wait_until='load')
-    await asyncio.sleep(5)
+    weblink = "https://www.copart.com/login/"
+    # await page.goto(weblink, wait_until='load')
+    await page.goto(weblink)
     return page
 
-async def visit(context,link, newPage):
+async def visit(context,link, new_page):
     try:
-        await newPage.goto(link, wait_until='load')
-        await asyncio.sleep(1)
+        await new_page.goto(link, wait_until='load')
+        await asyncio.sleep(5)
     except Exception as e:
-        await newPage.close()
-        newPage = await context.new_page()
-        await newPage.goto(link, wait_until='load')
-        await asyncio.sleep(1)
+        await new_page.close()
+        new_page = await context.new_page()
+        await new_page.goto(link, wait_until='load')
+        await asyncio.sleep(5)
 
 async def main():
-    playwright = await async_playwright().start()
-    args = [f"--disable-extensions-except=./Capsolver",
-    f"--load-extension=./Capsolver","--disable-blink-features=AutomationControlled"]
     # username = os.getenv("OxylabUser")
     # passwd = os.getenv("OxylabPass")
     username = os.getenv("BDUser")
     passwd = os.getenv("BDPass")
-    useProxy= os.getenv("USEPROXY")
-    # num=random.randint(1,21)
+    useproxy = os.getenv("USEPROXY")
+    num=random.randint(1,21)
     # if num<10:
-    #     proxy = f'isp.oxylabs.io:800{num}'
+    #     proxyserver = f'isp.oxylabs.io:800{num}'
     # else:
-    #     proxy = f'isp.oxylabs.io:80{num}'
-    proxy = f'brd.superproxy.io:22225'
-    print(proxy)
+    #     proxyserver = f'isp.oxylabs.io:80{num}'
+    proxyserver = f'brd.superproxy.io:22225'
+    print(proxyserver)
+    
+    playwright = await async_playwright().start()
+    if useproxy=="True":
+        # browser = await playwright.firefox.launch(headless=False)#,proxy={'server': 'socks://localhost:9060'})
+        browser = await playwright.chromium.launch_persistent_context('',headless=False,proxy={"server": proxyserver,"username": username,"password": passwd})
+    elif useproxy=="False":
+        browser = await playwright.chromium.launch_persistent_context('',headless=False)
+    context = browser #await browser.new_context() #{"server": "socks5://127.0.0.1:9051"})
 
-    if useProxy == "True":
-        browser = await playwright.chromium.launch_persistent_context('',args=args, headless=False,proxy={
-                "server": proxy,
-                "username": username,
-                "password": passwd
-                })
-    elif useProxy == "False":
-        browser = await playwright.chromium.launch_persistent_context('',args=args, headless=False)
+    page = await context.new_page()
+    await open_browser(page=page)
+    await asyncio.sleep(10)
 
-    # context = await browser.new_context(proxy={
-    #         "server": proxy,
-    #         "username": username,
-    #         "password": passwd
-    #         }) #{"server": "socks5://127.0.0.1:9051"})
-    context = browser
-    page =  await context.new_page()
-    # Enabling the extension for incognito mode
-    # await page.goto(f"chrome://extensions/?id={extension_id}")
-    # await asyncio.sleep(3)
-    # await page.mouse.click(640,640)
-    # await asyncio.sleep(3)
-
-    browse = await open_browser(page=page)
-
-    try:
-        iframe=await page.query_selector('iframe')
-        content=await iframe.content_frame()
-
-        while await content.is_visible('div.captcha'):
-            await asyncio.sleep(5)
-            print('Waiting for Captcha to be solved')
-        
-        await asyncio.sleep(5)
-    except:
-        pass
-
-    await asyncio.sleep(5)
-
-    email_input = await page.query_selector('#Email')
+    # Find the email input field by its ID
+    email_input = await page.query_selector('#username')
     email = "matti19913@gmail.com"
     await email_input.fill(email)
 
-    password_input = await page.query_selector('#Password')
+    password_input = await page.query_selector('#password')
     await password_input.fill('')
-    password = "Copart2023"
+    password = "Copart2023!"
     await password_input.fill(password)
 
-    await page.click('text=Remember Me')
-    await page.click('button[type="submit"]')
+    await page.click('text=Remember?')
+    await page.click('text=Sign Into Your Account')
     await asyncio.sleep(5)
-    
-    try:
-        iframe=await page.query_selector('iframe')
-        content=await iframe.content_frame()
 
-        while await content.is_visible('div.captcha'):
-            await asyncio.sleep(5)
-            print('Waiting for Captcha to be solved')
-        
-        await asyncio.sleep(5)
-    except:
-        pass
-
-    await page.hover('text=Vehicles')
-    await page.click('text=Cars')
-
-    await asyncio.sleep(3)
-    if await page.is_visible("text=Accept All"):
-        await page.click("text=Accept All")
-    elif await page.is_visible("text=I understand"):
-        await page.click("text=I understand")
-
+    load_dotenv()
     client = pymongo.MongoClient(os.getenv("MONGOAUTH"))
-    db = client['PortalAuction']
+    db = client['Copart']
     collection = db['Cars']
-    newPage = page #await context.new_page()
+    new_page = await context.new_page()
 
     count = 0
-    while True:
+    start_time = datetime.now()
+    now = datetime.now(cdt)
+    day_of_week = now.strftime("%A")
+
+    # checking if timing is matching and memory is used less than 40%
+    while (((datetime.now() - start_time).total_seconds()/60)<60) and (get_system_memory_usage() < 50) :
+        check_time = datetime.now(cdt).strftime("%H:%M")
+        if check_time>="08:00" and check_time<="16:00" and (day_of_week in weekdays):
+            print("Auction Time")
+            break
+            
+        Document = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
         logged_out = False
-        doc = collection.find_one_and_update({"Info": "None"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
-        # doc = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": None}}, sort=[("creation_time", ASCENDING)])
+        if not Document:
+            Document = collection.find_one_and_update({"Info.Name":{"$exists":False},"Info":{"$ne":"processing"}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+            if not Document:
+                Document = collection.find_one_and_update({"Info.Vehicle Info.VIN":{"$exists":False}}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+                if not Document:
+                    Document = collection.find_one_and_update({ "Info.Vehicle Info.VIN": { "$regex": ".*\\*\\*\\*\\*\\*\\*.*" } }, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+                    if not Document:
+                        Document = collection.find_one_and_update({"Info": "processing"}, {"$set": {"Info": "processing"}}, sort=[("creation_time", ASCENDING)])
+                        if not Document:
+                            break
 
-        if not doc:
-            if collection.count_documents({"Info":"processing"}) == 0:
-                break
-            else:
-                procdocs = collection.find({"Info": "processing"})
-                for doc in procdocs:
-                    carLink = doc['carLink']
-                    collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
+        carLink = Document['carLink']
+        if "https://www.copart.com" not in carLink:
+            collection.delete_one({"carLink": carLink})
 
-        carLink = doc['carLink']
-        link = carLink.replace("https://www.iaai.com", "")
+        link = carLink.replace("https://www.copart.com", "")
         print(link)
 
-        if count % 50 == 0:
-            await newPage.close()
-            newPage = await context.new_page()
+        if count > 70:
+            count=0
+            print("Closing the browser after 100 cars")
+            await new_page.close()
+            new_page = await context.new_page()
             await asyncio.sleep(5)
-            await visit(context,carLink, newPage)
+            await visit(context,carLink, new_page)
         else:
-            await visit(context,carLink, newPage)
+            try:
+                await asyncio.sleep(1)
+                await visit(context,carLink, new_page)
+            except TimeoutError:
+                print("TimeoutError")
+                continue
 
+        MainInfo = OrderedDict()
         try:
-            if await (await newPage.query_selector('h1.heading-3')).inner_text() == "Vehicle details are not found for this stock.":
-                MainInfo = "Vehicle details are not found for this stock."
-                update_query = {"$set": {"Info": MainInfo}}
-                collection.update_one({"carLink": carLink}, update_query)
-                continue
+            name_section = await new_page.query_selector('h1.title.my-0')
+            name = await name_section.inner_text()
+            MainInfo['Name'] = name
+            type1=True
         except:
-            pass
+            try:
+                name_section = await new_page.query_selector('h1.p-m-0')
+                name = await name_section.inner_text()
+                MainInfo['Name'] = name
+                type1=False
+            except:
+                try:
+                    if await new_page.is_visible('h2.subtitle-404'):
+                        print("Maybe the car is sold")
+                        # collection.update_one({"carLink": carLink}, {"$set": {"Info": "Car Sold Before Scraping"}})
+                        collection.delete_one({"carLink": carLink})
+                        passAll=True
+                        continue
+                    else:
+                        collection.delete_one({"carLink": carLink})
+                        continue
+                except:
+                    print("Nothing Found")
+                    # collection.update_one({"carLink": carLink}, {"$set": {"Info": "Nothing Found"}})
+                    collection.delete_one({"carLink": carLink})
+                    passAll=True
+                    continue
+        if type1:
+            image_section = await new_page.query_selector('.d-flex.thumbImgContainer')
+            if image_section:
+                images = await image_section.query_selector_all('img')
+                image_urls = [await image.get_attribute('src') for image in images]
+                image_urls = [url.replace("thb", "ful") for url in image_urls]
 
-        MainInfo = {}
-        name = await (await newPage.query_selector('h1')).inner_text()
-        MainInfo['Name'] = name
-
-        # Getting the image of the car
-        image_section = await newPage.query_selector('.vehicle-image__thumb-container#spacedthumbs1strow')
-
-        images = await image_section.query_selector_all('img')
-        image_urls = [await image.get_attribute('src') for image in images]
-        image_urls = [url.replace("&width=161&height=120","&width=850&height=637") for url in image_urls if 'height' in url]
-
-        image_names=[f'{link.replace("/VehicleDetail/","")}{image_urls.index(i)}.jpg' for i in image_urls]
-    
-        subprocess.Popen(["python", "downloadNupload.py", link, json.dumps(image_urls)])
-
-            
-        MainInfo['Images'] = image_names
-
-        # Getting the car details
-        infos_section = [i for i in await newPage.query_selector_all('div.tile.tile--data') if await i.query_selector("ul.data-list.data-list--details") and (await (await i.query_selector("h2.data-title")).inner_text() in ["VEHICLE INFORMATION","VEHICLE DESCRIPTION","SALE INFORMATION"])]
-        len(infos_section)
-
-        # Scraping Vehicle info , Vehicle Description and Sale Info
-        vehicle_info = {}
-        vinfo=await infos_section[0].query_selector_all('li.data-list__item')
-        for i in vinfo:
-            label=await (await i.query_selector('span.data-list__label')).inner_text()
-            value=await (await i.query_selector('span.data-list__value')).inner_text()
-            if "№ артикула:" in label:
-                label="Stock"
-            elif "Nr zapasów:" in label:
-                label="Stock"
-            elif "Nro. de existencia:" in label:
-                label="Stock"
-            elif "存货编号:" in label:
-                label="Stock"
-            elif "Stock #:" in label:
-                label="Stock"
+                image_names = []
+                for i in image_urls:
+                    numeric_part = re.search(r'\d+', link).group()
+                    ImageName = f'{name}-{numeric_part}-{image_urls.index(i)}.jpg'
+                    image_names.append(ImageName)
+                print("Images Found")
+                subprocess.Popen(["python", "downloadNupload.py", name, link, json.dumps(image_urls)])
                 
-            if "VIN (Status):" in label:
-                label=label.replace(" (Status):","")
-                value=value.replace(" (OK)","")
-            elif "VIN:" in label:
-                label=label.replace(":","")
-                value=value.replace(" (OK)","")
-            
-            if "******" in value and "VIN" in label:
-                logged_out=True
-                break
-            
-            
-            while '\n' in value or '\t' in value or '  ' in value or " (OK)" in value or " (Unknown)" in value:
-                value=value.replace('\n','').replace('\t','').replace('  ','').replace(" (OK)","").replace(" (Unknown)","")
-            vehicle_info[label]=value
-            
-        MainInfo['Vehicle Info']=vehicle_info
+                MainInfo['Images'] = image_names
 
-        if logged_out:
-            collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
 
-        vehicle_description = {}
-        vdesc=await infos_section[1].query_selector_all('li.data-list__item')
-        for i in vdesc:
-            label=await (await i.query_selector('span.data-list__label')).inner_text()
-            if '\nMore Info' in label:
-                label=label.replace(':\nMore Info',':')
-            value=await (await i.query_selector('span.data-list__value')).inner_text()
-            while '\n' in value or '\t' in value or '  ' in value or " (OK)" in value or " (Unknown)" in value :
-                value=value.replace('\n','').replace('\t','').replace('  ','').replace(" (OK)","").replace(" (Unknown)","")
+            try:
+                vehicle_info = OrderedDict()
+                vinfo = await new_page.wait_for_selector('div.panel-content.d-flex.f-g1.d-flex-column.full-width')
+                vinfo = await vinfo.query_selector('div.f-g2')
+                check = await vinfo.query_selector_all('div.d-flex')
 
-            if "VIN (Status):" in label:
-                label=label.replace(" (Status):","")
-                value=value.replace(" (OK)","")
-            elif "VIN:" in label:
-                label=label.replace(":","")
-                value=value.replace(" (OK)","")
-            
-                if "******" in value and "VIN" in label:
-                    logged_out=True
-                    break
+                while check:
+                    try:
+                        label, value = (await check.pop(0).inner_text()).split("\n")
+                        label = label.replace(":", "")
+                        vehicle_info[label] = value
+                        if "******" in value and "VIN" in label:
+                            await asyncio.sleep(5)
+                            # if await page.query_selector('a.btn.btn-sign-in'):
+                            logged_out=True
+                            break
+                    except:
+                        break
                     
-            vehicle_description[label]=value
-                
-        if logged_out:
-            collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
-            break
-        
-        MainInfo['Vehicle Description']=vehicle_description
-
-        sale_info = {}
-        sinfo=await infos_section[2].query_selector_all('li.data-list__item')
-        for i in sinfo:
-            try:
-                label=await (await i.query_selector('span.data-list__label')).inner_text()
-                label=label.replace(" Jackson (MS)","")
-            except Exception as e:
-                continue
-
-            try:
-                value=await i.query_selector('span.data-list__value')
-                if value is not None:
-                    value=await value.inner_text()
-                elif value is None:
-                    value=await i.query_selector('div')
-                    value=await value.inner_text()
-            except Exception as e:
+                MainInfo['Vehicle Info'] = vehicle_info
+            except:
                 pass
-            sale_info[label]=value
-        MainInfo['Sale Info']=sale_info
+
+            try:
+                sale_info = OrderedDict()
+                sinfo = await new_page.wait_for_selector("div.panel.clr.overflowHidden")
+                # sinfo = await new_page.query_selector("div.panel.clr.overflowHidden")
+                check = await sinfo.query_selector_all('div.d-flex')
+        
+                while check:
+                    try:
+                        data = await check.pop(0).inner_text()
+                        if "\n\n" in data:
+                            label, value = data.split("\n\n")
+                            label = label.replace(":", "")
+                        elif "\n" in data:
+                            label, value = data.split("\n", 1)
+                            label = label.replace(":", "")
+                    except:
+                        break
+                    sale_info[label] = value
+        
+                MainInfo['Sale Info'] = sale_info
+            except:
+                pass
+
+        elif not type1:
+            await new_page.click('span.p-ml-3.text-black')
+            await asyncio.sleep(1)
+            images_section = await new_page.query_selector_all('div.p-galleria-thumbnail-items-container')
+            image_section = await images_section[1].query_selector('div.p-galleria-thumbnail-items')
+            if image_section:
+                images = await image_section.query_selector_all('img')
+                image_urls = [await image.get_attribute('src') for image in images]
+                image_urls = [url.replace("thb", "ful") for url in image_urls]
+                image_names = []
+
+                for i in image_urls:
+                    numeric_part = re.search(r'\d+', link).group()
+                    ImageName = f'{name}-{numeric_part}-{image_urls.index(i)}.jpg'
+                    image_names.append(ImageName)
+                print("Images Found")
+                subprocess.Popen(["python", "downloadNupload.py", name, link, json.dumps(image_urls)])
+                
+                MainInfo['Images'] = image_names
+                # Getting back
+                await new_page.click('span.p-pl-3.text-dark-gray-3.p-fs-14')
+
+            try:
+                vehicle_info = OrderedDict()
+                vinfo = await new_page.wait_for_selector('div.lot-details-section.vehicle-info')
+                check = await vinfo.query_selector_all('div.lot-details-info')
+
+                while check:
+                    try:
+                        label, value = (await check.pop(0).inner_text()).split("\n")
+                        label = label.replace(":", "")
+                        vehicle_info[label] = value
+                        if "******" in value and "VIN" in label:
+                            await asyncio.sleep(5)
+                            # if await page.query_selector('a.btn.btn-sign-in'):
+                            logged_out=True
+                            break
+                    except:
+                        break
+                    
+                MainInfo['Vehicle Info'] = vehicle_info
+            except:
+                pass
+
+        if logged_out:
+            break
+            # collection.update_one({"carLink": carLink}, {"$set": {"Info": "None"}})
+            # if await page.query_selector("a.btn.btn-sign-in"):  
+            #     weblink = "https://www.copart.com/login/"
+            #     # await page.goto(weblink, wait_until='load')
+            #     await page.goto(weblink)
+            #     await asyncio.sleep(5)
+    
+            #     # Find the email input field by its ID
+            #     email_input = await page.query_selector('#username')
+            #     email = "matti19913@gmail.com"
+            #     await email_input.fill(email)
+    
+            #     password_input = await page.query_selector('#password')
+            #     await password_input.fill('')
+            #     password = "Copart2023!"
+            #     await password_input.fill(password)
+    
+            #     await page.click('text=Remember?')
+            #     await page.click('text=Sign Into Your Account')
+            #     await asyncio.sleep(30)
+            #     logged_out=False
+            #     continue
+
+
         collection.update_one({"carLink": carLink}, {"$set": {"Info": MainInfo}})
-
         count += 1
+        del Document
 
+    await browser.close()
     await playwright.stop()
 
-# Run the main function
 asyncio.run(main())
