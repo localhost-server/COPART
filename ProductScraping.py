@@ -85,7 +85,7 @@ async def main():
     client = pymongo.MongoClient(os.getenv("MONGOAUTH"))
     db = client['Copart']
     collection = db['Cars']
-    new_page = await context.new_page()
+    new_page = page #await context.new_page()
 
     count = 0
     start_time = datetime.now()
